@@ -16,8 +16,10 @@ export default function Price({ value, className = '' }: { value: number; classN
           const key = chars.length - i;
           if (!/\d/.test(ch)) return <span key={`c${key}`}>{ch}</span>;
           return (
+            // the hidden digit sizes the column to the digit shown, so a narrow 1 leaves no gap
             <span key={`d${key}`} className={s.col}>
-              <span style={{ transform: `translateY(${-Number(ch) * 10}%)` }}>
+              <span className={s.size}>{ch}</span>
+              <span className={s.reel} style={{ transform: `translateY(${-Number(ch) * 10}%)` }}>
                 {DIGITS.map((d) => (
                   <span key={d}>{d}</span>
                 ))}

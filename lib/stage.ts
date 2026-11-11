@@ -70,6 +70,7 @@ export class Stage {
   private finish: (() => void) | null = null;
   private observers: { disconnect(): void }[] = [];
   private opts: StageOptions;
+  private px = { w: 1, h: 1 }; // canvas size in CSS pixels, for measure()
 
   constructor(host: HTMLElement | null, opts: StageOptions) {
     this.opts = opts;
@@ -269,6 +270,45 @@ export class Stage {
     return this.finish;
   }
 
+  // Where the part sits on the canvas, in CSS pixels from its top left, for labels drawn over the
+  // scene: its silhouette's box, and the layer being printed (its height, and the left edge of what is
+  // already printed; null when nothing prints). Measured on the real vertices, sampled down to about 2000.
+  measure() {
+    this.camera.updateMatrixWorld();
+    this.mesh.updateWorldMatrix(true, false);
+    const pos = this.mesh.geometry.getAttribute('position');
+    const step = Math.max(1, Math.floor(pos.count / 2000));
+    const cut = this.uniforms.uCut.value < 1e5 && this.uniforms.uHotOn.value ? this.uniforms.uCut.value : null;
+    const v = new Vector3();
+    let left = Infinity, right = -Infinity, top = Infinity, bottom = -Infinity, cutX = Infinity;
+    for (let i = 0; i < pos.count; i += step) {
+      v.fromBufferAttribute(pos, i).applyMatrix4(this.mesh.matrixWorld);
+      v.project(this.camera);
+      const sx = ((v.x + 1) / 2) * this.px.w, sy = ((1 - v.y) / 2) * this.px.h;
+      left = Math.min(left, sx);
+      right = Math.max(right, sx);
+      top = Math.min(top, sy);
+      bottom = Math.max(bottom, sy);
+    }
+    // the layer's left end: where triangle edges cross the cut plane (a long strut has no vertex there)
+    if (cut !== null) {
+      const tri = [new Vector3(), new Vector3(), new Vector3()];
+      const tStep = Math.max(1, Math.floor(pos.count / 3 / 4000));
+      for (let t = 0; t + 2 < pos.count; t += 3 * tStep) {
+        for (let j = 0; j < 3; j++) tri[j].fromBufferAttribute(pos, t + j).applyMatrix4(this.mesh.matrixWorld);
+        for (let j = 0; j < 3; j++) {
+          const a = tri[j], b = tri[(j + 1) % 3];
+          if ((a.y - cut) * (b.y - cut) >= 0) continue;
+          v.lerpVectors(a, b, (cut - a.y) / (b.y - a.y)).project(this.camera);
+          cutX = Math.min(cutX, ((v.x + 1) / 2) * this.px.w);
+        }
+      }
+    }
+    // the part turns about the vertical axis through the origin, so the layer's centre is (0, cut, 0)
+    const layer = cut !== null ? new Vector3(0, cut, 0).project(this.camera) : null;
+    return { left, right, top, bottom, cut: layer && cutX < Infinity ? { x: cutX, y: ((1 - layer.y) / 2) * this.px.h } : null };
+  }
+
   // jumps a playing print to its end: the scroll is about to take over the part
   skip() {
     this.finish?.();
@@ -334,6 +374,7 @@ export class Stage {
 
   private resize(w: number, h: number) {
     if (!w || !h) return;
+    this.px = { w, h };
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, w < 640 ? 1.5 : 2));
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;

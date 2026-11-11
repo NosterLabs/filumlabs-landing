@@ -56,6 +56,9 @@ export default function Viewer({
   const progress = useRef(onProgress);
   progress.current = onProgress;
   const [state, setState] = useState<'loading' | 'ready' | 'unsupported'>('loading');
+  // counts stages built: a rebuilt stage (new framing or volume) is 'ready' again with no state change,
+  // so the part effect below keys on this to put the part on the new stage
+  const [built, setBuilt] = useState(0);
 
   useEffect(() => {
     let alive = true;
@@ -64,6 +67,7 @@ export default function Viewer({
         if (!alive || !host.current) return;
         stage.current = new Stage(host.current, { volume, framing, view, interactive, pan });
         setState('ready');
+        setBuilt((n) => n + 1);
         onReady?.(true);
         onStage?.(stage.current);
       })
@@ -107,7 +111,7 @@ export default function Viewer({
         progress.current?.(1);
       }
     }
-  }, [geometry, owned, color, scale, rotation, fits, print, state]);
+  }, [geometry, owned, color, scale, rotation, fits, print, state, built]);
 
   return (
     <div className={`${s.viewer} ${className}`} data-state={state} data-static={!interactive || undefined} data-ui>

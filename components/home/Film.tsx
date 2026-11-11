@@ -55,6 +55,7 @@ function viewAt(f: number, narrow: boolean): StageView {
 export default function Film({ data, children }: { data: FilmData; children: ReactNode }) {
   const root = useRef<HTMLDivElement>(null);
   const stageBox = useRef<HTMLDivElement>(null);
+  const marks = useRef<HTMLDivElement>(null);
   const chapters = useRef<(HTMLElement | null)[]>([]);
   const printing = useRef(true);
   const [stage, setStage] = useState<Stage | null>(null);
@@ -112,6 +113,12 @@ export default function Film({ data, children }: { data: FilmData; children: Rea
         stage.setTurn(sh.turn);
       }
       stage.setView(viewAt(f, narrow));
+      // the labels over the part follow it on screen; phones have no room for them
+      if (!narrow && marks.current) {
+        const m = stage.measure();
+        const at = { right: m.right, top: m.top, bottom: m.bottom, cutX: m.cut?.x ?? 0, cutY: m.cut?.y ?? 0 };
+        for (const [k, v] of Object.entries(at)) marks.current.style.setProperty(`--${k}`, v.toFixed(1));
+      }
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
@@ -138,6 +145,10 @@ export default function Film({ data, children }: { data: FilmData; children: Rea
   const layers = Math.round(mix(a.layers, b.layers, sh.grow));
   const busy = done < 1 && (pos === 0 || pos >= 2.1);
   const status = busy ? 'Imprimiendo' : pos < 0.5 ? 'Lista' : pos < 1.5 ? 'Archivo leído' : pos < 2.1 ? 'Ajustando' : pos < 3.5 ? 'Lista' : 'En el pedido';
+  // the note leads with the one figure that matters at this point of the film
+  const scene = pos < 0.5 ? (busy ? 'print' : 'hero') : pos < 1.5 ? 'file' : pos < 2.05 ? 'adjust' : pos < 3.5 ? 'print' : 'order';
+  const layerNow = Math.max(1, Math.ceil(layers * done));
+  const dims = a.size.map((v) => Math.round(v * sh.k));
   const active = pos <= 0 ? 0 : Math.min(4, Math.floor(pos) + 1);
 
   return (
@@ -165,39 +176,79 @@ export default function Film({ data, children }: { data: FilmData; children: Rea
             )}
           </div>
 
-          <div className={`${s.note} glass`}>
+          {/* labels pinned to the part: its real height while the file is read and grown, the hot layer while it prints */}
+          <div ref={marks} className={s.marks} aria-hidden="true" data-dim={(pos >= 0.35 && pos < 2.05) || undefined} data-cut={(pos >= 2.1 && done < 1) || undefined}>
+            <div className={s.dim}>
+              <span className="num">{dims[2]} mm</span>
+            </div>
+            <div className={s.cut}>
+              <span className="num">capa {layerNow}</span>
+            </div>
+          </div>
+
+          <div className={`${s.note} glass`} data-scene={scene}>
             <div className={s.noteHead}>
               <span>{data.name}</span>
               <span className={s.status} data-live={busy || undefined}>
                 {status}
               </span>
             </div>
-            <dl className={`${s.rows} num`}>
-              <div data-row="size">
-                <dt>Medidas</dt>
-                <dd>{size(a.size.map((v) => v * sh.k) as FilmFigures['size'])}</dd>
-              </div>
-              <div>
-                <dt>Capas</dt>
-                <dd>{done < 1 ? `${Math.max(1, Math.ceil(layers * done))} de ${layers}` : layers}</dd>
-              </div>
-              <div data-row="grams">
-                <dt>Filamento</dt>
-                <dd>{grams(mix(a.grams, b.grams, sh.grow) * done)}</dd>
-              </div>
-              <div data-row="time">
-                <dt>Tiempo</dt>
-                <dd>{duration(mix(a.seconds, b.seconds, sh.grow) * done)}</dd>
-              </div>
-              <div>
-                <dt>
-                  Precio<span className={s.long}> estimado</span>
-                </dt>
-                <dd>
-                  <Price value={sh.grow > 0.5 ? b.price : a.price} />
-                </dd>
-              </div>
-            </dl>
+            {/* keyed by scene: each figure arrives with a short rise instead of a row changing in place */}
+            <div key={scene} className={`${s.feature} num`}>
+              {scene === 'hero' && (
+                <>
+                  <span className={s.label}>Precio estimado</span>
+                  <Price value={a.price} className={s.big} />
+                  <span className={s.sub}>
+                    {grams(a.grams)} · {duration(a.seconds)} · {a.layers} capas
+                  </span>
+                </>
+              )}
+              {scene === 'file' && (
+                <>
+                  <span className={s.label}>Medidas del archivo</span>
+                  <span className={s.big}>
+                    {dims.join(' × ')}
+                    <small> mm</small>
+                  </span>
+                  <span className={s.sub}>
+                    <Icon name="file" />
+                    {data.file}
+                  </span>
+                </>
+              )}
+              {scene === 'adjust' && (
+                <>
+                  <span className={s.label}>Precio estimado</span>
+                  <Price value={sh.grow > 0.5 ? b.price : a.price} className={s.big} />
+                  <span className={s.sub}>
+                    Escala {Math.round(sh.k * 100)} % · {dims.join(' × ')} mm
+                  </span>
+                </>
+              )}
+              {scene === 'print' && (
+                <>
+                  <span className={s.label}>Capa</span>
+                  <span className={s.big}>
+                    {done < 1 ? layerNow : layers}
+                    <small> de {layers}</small>
+                  </span>
+                  <span className={s.bar}>
+                    <i style={{ transform: `scaleX(${done})` }} />
+                  </span>
+                  <span className={s.sub}>
+                    {grams(mix(a.grams, b.grams, sh.grow) * done)} · {duration(mix(a.seconds, b.seconds, sh.grow) * done)}
+                  </span>
+                </>
+              )}
+              {scene === 'order' && (
+                <>
+                  <span className={s.label}>Listo para pedir</span>
+                  <Price value={b.price} className={s.big} />
+                  <span className={s.sub}>El pedido sale por WhatsApp, con el detalle de la pieza</span>
+                </>
+              )}
+            </div>
             <p className={s.noteFoot}>Medido con el mismo cotizador que vas a usar.{data.demo ? ' Precio de ejemplo.' : ''}</p>
           </div>
 

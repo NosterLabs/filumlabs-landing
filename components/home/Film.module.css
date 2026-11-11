@@ -70,42 +70,78 @@
 .noteHead { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 15px; font-weight: 500; letter-spacing: -0.01em; }
 .status { font-size: 13px; font-weight: 400; color: var(--ink-3); transition: color 0.2s ease-out; }
 .status[data-live] { color: var(--hot); }
-.rows { display: grid; gap: 6px; }
-.rows div { display: flex; justify-content: space-between; gap: 12px; }
-.rows dt { color: var(--ink-2); }
-.rows dd { margin: 0; color: var(--ink); }
+.feature { display: grid; gap: 6px; animation: featureIn 0.45s var(--ease) both; }
+.label { font-size: 13px; color: var(--ink-3); }
+.big { font-size: 40px; font-weight: 500; letter-spacing: -0.04em; line-height: 1.05; color: var(--ink); }
+.big small { font-size: 17px; font-weight: 400; letter-spacing: 0; color: var(--ink-2); }
+.sub { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); }
+.sub svg { width: 16px; height: 16px; flex: none; }
+.bar { display: block; height: 3px; margin: 4px 0 2px; border-radius: 2px; background: rgba(238, 242, 245, 0.14); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--hot); transform-origin: left; }
+@keyframes featureIn { from { opacity: 0; transform: translateY(6px); filter: blur(3px); } }
+
+/* ---------- labels pinned to the part, placed from Stage.measure() in CSS pixels ---------- */
+.marks { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.dim, .cut { position: absolute; opacity: 0; transition: opacity 0.3s ease-out; }
+.marks[data-dim] .dim, .marks[data-cut] .cut { opacity: 1; }
+/* a dimension line beside the part, ticks at both ends, like a drawing */
+.dim {
+  left: calc(var(--right, 0) * 1px + 28px);
+  top: calc(var(--top, 0) * 1px);
+  height: calc((var(--bottom, 0) - var(--top, 0)) * 1px);
+  width: 1px;
+  background: rgba(238, 242, 245, 0.55);
+}
+.dim::before, .dim::after { content: ''; position: absolute; left: -6px; width: 13px; height: 1px; background: inherit; }
+.dim::before { top: 0; }
+.dim::after { bottom: 0; }
+.dim span, .cut span {
+  position: absolute;
+  top: 50%;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(13, 17, 21, 0.7);
+  font-size: 13px;
+  white-space: nowrap;
+  transform: translateY(-50%);
+}
+.dim span { left: 12px; color: var(--ink); }
+/* the layer leaving the nozzle: a short hot leader from the part's left side to its number */
+.cut { left: calc(var(--cutX, 0) * 1px - 58px); top: calc(var(--cutY, 0) * 1px); width: 52px; height: 1px; background: var(--hot); }
+.cut span { right: 58px; color: var(--hot); }
 .noteFoot { padding-top: 10px; border-top: 1px solid rgba(238, 242, 245, 0.12); font-size: 12px; color: var(--ink-3); }
 
-/* ---------- the four steps, on the stage while the chapters scroll ---------- */
+/* ---------- the four steps, a timeline along the top of the stage; the sides are for the part's labels ---------- */
 .steps {
   position: absolute;
+  left: 0;
   right: 0;
-  top: 50%;
+  top: 20px;
   z-index: 2;
-  display: grid;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 18px;
-  justify-items: end;
-  transform: translateY(-50%);
   font-size: var(--f-small);
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s ease-out, visibility 0s 0.3s;
 }
 .steps[data-on] { opacity: 1; visibility: visible; transition: opacity 0.3s ease-out; }
-.steps ol { list-style: none; padding: 0; display: grid; gap: 2px; justify-items: end; }
+.steps ol { list-style: none; padding: 0; display: flex; gap: 22px; }
 .steps ol a {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-height: 40px;
   color: var(--ink-3);
   text-decoration: none;
   transition: color 0.2s ease-out;
 }
-.steps ol a::after { content: ''; width: 18px; height: 1px; background: currentColor; transition: width 0.3s var(--ease); }
+.steps ol a::before { content: ''; width: 14px; height: 1px; background: currentColor; transition: width 0.3s var(--ease); }
 .steps ol a:hover { color: var(--ink-2); }
 .steps ol a[aria-current] { color: var(--ink); }
-.steps ol a[aria-current]::after { width: 36px; }
+.steps ol a[aria-current]::before { width: 32px; }
 .skip { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink-2); }
 
 /* ---------- copy column ---------- */
@@ -186,21 +222,20 @@
   .chapter { min-height: 72svh; align-content: start; padding: 0 0 6svh; }
   /* the chapter's text waits right under the stage while its chapter scrolls by */
   .text { position: sticky; top: calc(var(--nav-h) + 46svh + 16px); }
-  .long { display: none; }
   .note { left: 12px; right: 12px; bottom: 10px; width: auto; gap: 8px; padding: 10px 14px; border-radius: 16px; }
-  .noteFoot, .rows [data-row] { display: none; }
-  .rows { grid-template-columns: 1fr 1fr; column-gap: 20px; }
+  .noteFoot, .marks, .label, .sub { display: none; }
+  .big { font-size: 28px; }
   .steps { top: 10px; right: auto; left: var(--gutter); transform: none; justify-items: start; }
   .steps ol { display: flex; gap: 14px; }
   .steps ol a { min-height: 32px; gap: 6px; }
-  .steps ol a::after { display: none; }
+  .steps ol a::before { display: none; }
   .steps ol a:not([aria-current]) span:last-child { display: none; }
   .skip { display: none; }
 }
 
 /* ---------- reduced motion, or no WebGL: four still blocks, each with its own image ---------- */
 .inner[data-still] .stage { position: relative; top: auto; grid-row: 1; height: auto; aspect-ratio: 15 / 16; }
-.inner[data-still] .steps { display: none; }
+.inner[data-still] .steps, .inner[data-still] .marks { display: none; }
 .inner[data-still] .text { position: static; }
 .inner[data-still] .chapters { grid-column: 1 / -1; }
 .inner[data-still] .chapter {

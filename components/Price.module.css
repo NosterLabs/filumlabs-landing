@@ -1,4 +1,5 @@
 .roll { display: inline-flex; white-space: pre; }
-.col { display: inline-block; height: 1lh; overflow: hidden; }
-.col > span { display: flex; flex-direction: column; transition: transform 0.5s var(--ease); }
-.col > span > span { height: 1lh; }
+.col { position: relative; display: inline-block; height: 1lh; overflow: hidden; }
+.size { visibility: hidden; }
+.reel { position: absolute; top: 0; left: 50%; display: flex; flex-direction: column; align-items: center; margin-left: -0.5em; width: 1em; transition: transform 0.5s var(--ease); }
+.reel > span { height: 1lh; }

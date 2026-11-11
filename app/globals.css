@@ -161,21 +161,24 @@ p, li, figcaption, summary { text-wrap: pretty; }
   gap: 28px;
   transition: max-width 0.5s var(--ease), height 0.4s var(--ease), margin 0.4s var(--ease), padding 0.4s var(--ease), background-color 0.3s ease-out, box-shadow 0.3s ease-out;
 }
-/* the quick bar: past the first screen the nav floats as a glass pill with only what people come back for */
-.nav[data-compact='true'] { background: transparent; border-bottom-color: transparent; }
-.nav[data-compact='true'] .nav-inner {
-  width: calc(100% - 16px);
-  max-width: 880px;
-  height: 52px;
-  margin: 6px auto 0;
-  padding: 0 6px 0 20px;
-  border-radius: 999px;
-  background: rgba(13, 17, 21, 0.78);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
-  backdrop-filter: blur(18px) saturate(140%);
-  box-shadow: var(--ring), 0 14px 40px -14px rgba(0, 0, 0, 0.7);
+/* the quick bar: past the first screen the nav floats as a glass pill with only what people come back for.
+   Wide screens only: on phones the bar already holds just the essentials and stays solid, so no text shows behind it */
+@media (min-width: 861px) {
+  .nav[data-compact='true'] { background: transparent; border-bottom-color: transparent; }
+  .nav[data-compact='true'] .nav-inner {
+    width: calc(100% - 16px);
+    max-width: 880px;
+    height: 52px;
+    margin: 6px auto 0;
+    padding: 0 6px 0 20px;
+    border-radius: 999px;
+    background: rgba(13, 17, 21, 0.78);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    backdrop-filter: blur(18px) saturate(140%);
+    box-shadow: var(--ring), 0 14px 40px -14px rgba(0, 0, 0, 0.7);
+  }
+  .nav[data-compact='true'] .nav-links li:not(:first-child) { display: none; }
 }
-.nav[data-compact='true'] .nav-links li:not(:first-child) { display: none; }
 .nav-brand { display: inline-flex; align-items: center; gap: 10px; font-size: 21px; letter-spacing: -0.02em; text-decoration: none; }
 .nav-brand svg { width: 26px; height: 26px; }
 .nav-brand b { font-weight: 600; }
@@ -215,6 +218,7 @@ p, li, figcaption, summary { text-wrap: pretty; }
 .nav-menu { display: none; }
 .nav-sheet { display: none; }
 @media (max-width: 860px) {
+  .nav { background: var(--bg); }
   .nav-inner { gap: 10px; }
   .nav-links-wrap { display: none; }
   .nav-brand span { display: none; }

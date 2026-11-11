@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BufferGeometry, Float32BufferAttribute } from 'three';
 import Viewer from './Viewer';
 import GlassTile from './GlassTile';
@@ -12,9 +12,10 @@ import { buildModel, buildViewModel, toZUp, type ModelId } from '@/lib/models';
 import { meshStats, type MeshStats } from '@/lib/mesh';
 import { quarterTurns, rotatedSize, type Turns } from '@/lib/orient';
 import { DEFAULT_SETTINGS, combine, estimate, lineTotal, type PrintSettings } from '@/lib/pricing';
+import { inRow, packOnBed, placed } from '@/lib/plates';
 import Swatches from './Swatches';
 import Price from './Price';
-import { MATERIALS, PRICING, colorOf, colorsFor, type ColorId, type MaterialId } from '@/lib/config';
+import { MATERIALS, colorOf, colorsFor, type ColorId, type MaterialId } from '@/lib/config';
 import { DEFAULT_PRINTER, PRINTERS } from '@/lib/printers';
 import { duration, grams, list, money, size } from '@/lib/format';
 import { WA_PENDING, orderMessage, waLink } from '@/lib/whatsapp';
@@ -30,6 +31,14 @@ const SAMPLES: { id: ModelId; label: string }[] = [
 // number: the plate's number in the slicer, which the order message quotes
 type Model = { name: string; plates: { number: number; geometry: BufferGeometry; stats: MeshStats }[] };
 type Status = { kind: 'idle' } | { kind: 'loading'; name: string; mb: number } | { kind: 'error'; message: string };
+// todas: every plate kept in the order, each printed on its own; una: a single plate;
+// combinar: the kept plates packed onto one bed, shrunk if they do not fit, printed in one run
+type Mode = 'todas' | 'una' | 'combinar';
+const MODES: [Mode, string, string][] = [
+  ['todas', 'Por separado', 'Cada plancha en su propia impresión'],
+  ['una', 'Solo una', 'Imprimís una plancha del archivo'],
+  ['combinar', 'Todas juntas', 'En una sola plancha, achicadas si no entran'],
+];
 
 export default function Quoter() {
   const printer = DEFAULT_PRINTER;
@@ -45,12 +54,15 @@ export default function Quoter() {
   const [printP, setPrintP] = useState(1);
   const [plate, setPlate] = useState(0);
   const [skip, setSkip] = useState<number[]>([]); // plates left out of the order, by index
+  const [mode, setMode] = useState<Mode>('todas');
+  const send = useRef<HTMLDialogElement>(null);
 
   const reset = () => {
     setTurns([0, 0, 0]);
     setScalePct(100);
     setPlate(0);
     setSkip([]);
+    setMode('todas');
   };
 
   // the quoter owns the plate geometries: the viewer shows one at a time and must not dispose the rest
@@ -104,30 +116,52 @@ export default function Quoter() {
   const runs = plates.map((p) => estimate(adjusted(p.stats), settings, printer));
   const kept = plates.flatMap((_, i) => (skip.includes(i) ? [] : [i]));
   const numbers = (idx: number[]) => list([...idx].sort((a, b) => a - b).map((i) => plates[i].number));
-  // the stage and its readouts show one plate; the price covers every plate still in the order
-  const stats = plates[plate] ? adjusted(plates[plate].stats) : null;
-  const shownEst = runs[plate] ?? null;
-  const est = kept.length ? combine(kept.map((i) => runs[i]), settings.material) : null;
-  const tooBig = kept.filter((i) => !runs[i].fits);
+
+  // the kept plates in one geometry: side by side to see them all, or packed onto one bed
+  const together = useMemo(() => {
+    if (!model || model.plates.length < 2 || mode === 'una') return null;
+    const idx = model.plates.flatMap((_, i) => (skip.includes(i) ? [] : [i]));
+    const boxes = idx.map((i) => model.plates[i].stats.size);
+    const layout = mode === 'combinar' ? packOnBed(boxes, printer.volume) : inRow(boxes);
+    const volume = idx.reduce((n, i) => n + model.plates[i].stats.volume, 0);
+    const area = idx.reduce((n, i) => n + model.plates[i].stats.area, 0);
+    const stats: MeshStats = { volume: volume * layout.scale ** 3, area: area * layout.scale ** 2, size: layout.size };
+    return { scale: layout.scale, stats, geometry: idx.length > 1 || mode === 'combinar' ? placed(idx.map((i) => model.plates[i].geometry), layout) : null };
+  }, [model, skip, mode, printer.volume]);
+  useEffect(() => () => together?.geometry?.dispose(), [together]);
+
+  // what is on the stage is what is quoted: one plate, every kept plate, or the combined bed
+  const single = !many || mode === 'una' ? (many ? plate : 0) : null;
+  const all = many && mode === 'todas' && kept.length > 1;
+  const stats = single !== null ? (plates[single] ? adjusted(plates[single].stats) : null) : together ? adjusted(together.stats) : null;
+  const est = !model ? null : single !== null ? runs[single] : mode === 'combinar' ? estimate(stats!, settings, printer) : combine(kept.map((i) => runs[i]), settings.material);
+  const shown = single !== null ? plates[single]?.geometry : (together?.geometry ?? plates[kept[0]]?.geometry);
+  const tooBig = mode === 'todas' && many ? kept.filter((i) => !runs[i].fits) : [];
+  const pct = Math.round((together?.scale ?? 1) * k * 100); // the combined bed against the original size
   const total = est ? lineTotal(est.unitPrice, qty, true) : 0;
   const colors = colorsFor(settings.material);
   const colorDef = colorOf(colors.includes(color) ? color : colors[0]);
-  const skipped = skip.includes(plate);
 
   const fitMax = () => {
     if (!model) return;
-    const room = kept.flatMap((j) => rotatedSize(plates[j].stats.size, turns).map((v, i) => (printer.volume[i] * 0.98) / v));
+    const sizes = single !== null ? [plates[single].stats.size] : mode === 'combinar' && together ? [together.stats.size] : kept.map((j) => plates[j].stats.size);
+    const room = sizes.flatMap((sz) => rotatedSize(sz, turns).map((v, i) => (printer.volume[i] * 0.98) / v));
     setScalePct(Math.floor(Math.min(...room) * 100));
   };
 
   const set = <K extends keyof PrintSettings>(key: K, value: PrintSettings[K]) => setSettings((p) => ({ ...p, [key]: value }));
 
   // the order travels with the whole file, so it says which plates to print
+  const without = skip.length ? ` (no imprimir ${skip.length > 1 ? 'las planchas' : 'la plancha'} ${numbers(skip)})` : '';
   const which = !many
     ? size(stats?.size ?? [0, 0, 0])
-    : skip.length
-      ? `${kept.length > 1 ? 'Planchas' : 'Plancha'} ${numbers(kept)} del archivo (no imprimir ${skip.length > 1 ? 'las' : 'la'} ${numbers(skip)})`
-      : `${plates.length} planchas`;
+    : mode === 'una'
+      ? `Solo la plancha ${plates[plate].number} del archivo`
+      : mode === 'combinar'
+        ? `${kept.length > 1 ? `Planchas ${numbers(kept)} combinadas` : `Plancha ${numbers(kept)}`} en una sola, al ${pct} % del tamaño original${without}`
+        : skip.length
+          ? `${kept.length > 1 ? 'Planchas' : 'Plancha'} ${numbers(kept)} del archivo${without}`
+          : `${plates.length} planchas`;
   const detail =
     est && stats
       ? `${which} · ${MATERIALS[settings.material].label} ${colorDef.label.toLowerCase()} · relleno ${Math.round(settings.infill * 100)}% · capa ${settings.layerHeight.toFixed(2).replace('.', ',')} mm · ${grams(est.grams)} · ${duration(est.seconds)} por pieza`
@@ -160,48 +194,25 @@ export default function Quoter() {
           if (f) open(f);
         }}
       >
+        {/* every plate side by side does not fit one build volume: that view frames the parts alone */}
         <Viewer
-          geometry={plates[plate]?.geometry ?? null}
+          geometry={shown ?? null}
           owned={false}
           pan
           color={colorDef.hex}
           scale={k}
           rotation={rotation}
-          fits={shownEst?.fits ?? true}
+          fits={est?.fits ?? true}
           volume={printer.volume}
+          framing={all ? 'model' : 'volume'}
           print={1800}
           onProgress={setPrintP}
-          label={model ? `Vista 3D de ${model.name}${many ? `, plancha ${plates[plate].number}${skipped ? ' (quitada del pedido)' : ''},` : ''} dentro del volumen de impresión` : 'Volumen de impresión vacío, de 18 × 18 × 18 cm'}
+          label={
+            model
+              ? `Vista 3D de ${model.name}${!many ? '' : single !== null ? `, plancha ${plates[single].number},` : mode === 'combinar' ? ', todas las planchas combinadas en una,' : `, ${kept.length} planchas,`} dentro del volumen de impresión`
+              : 'Volumen de impresión vacío, de 18 × 18 × 18 cm'
+          }
         />
-
-        {many && (
-          <div className={s.plates} role="group" aria-label="Planchas del archivo">
-            <span>Plancha</span>
-            {plates.map((p, i) => (
-              <button
-                key={i}
-                type="button"
-                aria-pressed={plate === i}
-                aria-label={`Plancha ${p.number}${skip.includes(i) ? ', quitada' : ''}`}
-                onClick={() => setPlate(i)}
-                data-off={skip.includes(i) || undefined}
-                data-warn={(!skip.includes(i) && !runs[i].fits) || undefined}
-              >
-                {p.number}
-              </button>
-            ))}
-            {/* the last plate left cannot go: an order needs something to print */}
-            <button
-              type="button"
-              className={s.plateToggle}
-              onClick={() => setSkip((v) => (skipped ? v.filter((i) => i !== plate) : [...v, plate]))}
-              disabled={!skipped && kept.length === 1}
-              aria-label={`${skipped ? 'Volver a incluir' : 'Quitar'} la plancha ${plates[plate].number}`}
-            >
-              {skipped ? 'Volver a incluir' : 'Quitar'}
-            </button>
-          </div>
-        )}
 
         {!model && status.kind !== 'loading' && (
           <div className={s.empty}>
@@ -250,12 +261,12 @@ export default function Quoter() {
           </div>
         )}
 
-        {stats && shownEst && (
+        {est && (stats || all) && (
           <div className={s.readout}>
-            <GlassTile icon="size" label="Medidas" value={size(stats.size)} />
-            <GlassTile icon="spool" label="Filamento" value={grams(shownEst.grams * printP)} viz={{ kind: 'meter', value: printP }} live={live} />
-            <GlassTile icon="clock" label="Impresión" value={duration(shownEst.seconds)} />
-            <GlassTile icon="layers" label="Capas" value={String(Math.ceil(shownEst.layers * printP))} viz={{ kind: 'bars', value: printP }} live={live} />
+            <GlassTile icon="size" label="Medidas" value={all ? `${kept.length} planchas` : size(stats!.size)} />
+            <GlassTile icon="spool" label="Filamento" value={grams(est.grams * printP)} viz={{ kind: 'meter', value: printP }} live={live} />
+            <GlassTile icon="clock" label="Impresión" value={duration(est.seconds)} />
+            <GlassTile icon="layers" label="Capas" value={String(Math.ceil(est.layers * printP))} viz={{ kind: 'bars', value: printP }} live={live} />
           </div>
         )}
       </div>
@@ -287,6 +298,55 @@ export default function Quoter() {
           </p>
         </fieldset>
 
+        {many && (
+          <fieldset className={s.group}>
+            <legend>Cómo imprimir las {plates.length} planchas</legend>
+            <div className={s.modes} role="radiogroup" aria-label="Cómo imprimir las planchas">
+              {MODES.map(([m, label, text]) => (
+                <button key={m} type="button" role="radio" aria-checked={mode === m} onClick={() => setMode(m)}>
+                  <b>{label}</b>
+                  <span>{text}</span>
+                </button>
+              ))}
+            </div>
+            {/* one look for both pickers: a filled plate is a plate that gets printed */}
+            <p className={s.pick}>{mode === 'una' ? 'Elegí cuál:' : 'Planchas incluidas (tocá para sacar o sumar):'}</p>
+            {mode === 'una' ? (
+              <div className={s.chips} role="radiogroup" aria-label="Plancha a imprimir">
+                {plates.map((p, i) => (
+                  <button key={i} type="button" role="radio" aria-checked={plate === i} data-warn={!runs[i].fits || undefined} onClick={() => setPlate(i)}>
+                    Plancha {p.number}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              // pressed = in the order; the last plate left cannot go, an order needs something to print
+              <div className={s.chips} role="group" aria-label="Planchas incluidas">
+                {plates.map((p, i) => {
+                  const on = !skip.includes(i);
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      aria-pressed={on}
+                      disabled={on && kept.length === 1}
+                      data-warn={(mode === 'todas' && on && !runs[i].fits) || undefined}
+                      onClick={() => setSkip((v) => (on ? [...v, i] : v.filter((j) => j !== i)))}
+                    >
+                      Plancha {p.number}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {mode === 'combinar' && (
+              <p className={s.note}>
+                {(together?.scale ?? 1) < 1 ? `Se achican al ${Math.round(together!.scale * 100)} % para que entren en una plancha.` : 'Entran en una plancha a tamaño original.'}
+              </p>
+            )}
+          </fieldset>
+        )}
+
         <fieldset className={s.group} disabled={!model}>
           <legend>Tamaño</legend>
           <div className={s.inline}>
@@ -301,7 +361,7 @@ export default function Quoter() {
             <button type="button" onClick={() => setScalePct(1000)}>Está en cm</button>
             <button type="button" onClick={() => setScalePct(2540)}>Está en pulgadas</button>
           </div>
-          {tooBig.length > 0 && <p className={s.warn}>{many ? `No entra en la A1 mini: ${tooBig.length > 1 ? 'planchas' : 'plancha'} ${numbers(tooBig)}.` : 'No entra en la A1 mini.'} Bajá la escala o rotala.</p>}
+          {est && !est.fits && <p className={s.warn}>{tooBig.length ? `No entra en la A1 mini: ${tooBig.length > 1 ? 'planchas' : 'plancha'} ${numbers(tooBig)}.` : 'No entra en la A1 mini.'} Bajá la escala o rotala.</p>}
           {stats && Math.max(...stats.size) < 8 && <p className={s.warn}>Parece muy chica. ¿El archivo está en centímetros o pulgadas?</p>}
         </fieldset>
 
@@ -347,17 +407,8 @@ export default function Quoter() {
           <p className={s.note}>Altura de capa en mm: menos es más liso y tarda más.</p>
         </fieldset>
 
+        {/* the panel keeps only the total; the breakdown and the two warnings come up before WhatsApp opens */}
         <div className={s.price}>
-          <div className={s.priceRow}>
-            <span>{!many ? 'Por pieza' : kept.length > 1 ? `Las ${kept.length} planchas` : `La plancha ${numbers(kept)}`}</span>
-            {est ? <Price value={est.unitPrice} /> : <span>Subí un archivo</span>}
-          </div>
-          {many && est && (
-            <p className={`${s.note} num`}>
-              {skip.length > 0 && `Sin ${skip.length > 1 ? 'las planchas' : 'la plancha'} ${numbers(skip)}. `}
-              {kept.length > 1 ? `Se imprimen por separado: ${grams(est.grams)} y ${duration(est.seconds)} en total.` : `${grams(est.grams)} y ${duration(est.seconds)}.`}
-            </p>
-          )}
           <div className={s.priceRow}>
             <label htmlFor="qty">Cantidad</label>
             <div className="qty">
@@ -366,7 +417,6 @@ export default function Quoter() {
               <button type="button" onClick={() => setQty((q) => q + 1)} aria-label="Una más">+</button>
             </div>
           </div>
-          <p className={s.note}>Incluye {money(PRICING.setupPerLine)} de preparación del archivo.</p>
           <div className={`${s.priceRow} ${s.total}`}>
             <span>Total estimado</span>
             <span aria-live="polite">
@@ -377,18 +427,56 @@ export default function Quoter() {
             Agregar al pedido
           </button>
           {item && (
-            <a className="link" href={waLink(orderMessage([{ ...item, key: 'q' }]))} target="_blank" rel="noopener noreferrer">
+            <button type="button" className={`link ${s.ask}`} onClick={() => send.current?.showModal()}>
               Consultar solo esta pieza por WhatsApp
-            </a>
+            </button>
           )}
-          {item && (
+        </div>
+
+        {item && est && (
+          // native dialog: focus stays inside, Esc closes it; a click on the backdrop closes it too
+          <dialog ref={send} className={s.dialog} aria-labelledby="send-title" onClick={(e) => e.target === e.currentTarget && send.current?.close()}>
+            <h2 id="send-title">Antes de enviar</h2>
+            <dl className={s.breakdown}>
+              <div>
+                <dt>
+                  {!many ? 'La pieza' : single !== null ? `La plancha ${plates[single].number}` : mode === 'combinar' ? 'Todo en una plancha' : kept.length > 1 ? `Las ${kept.length} planchas` : `La plancha ${numbers(kept)}`}
+                  {qty > 1 && <span className="num"> × {qty}</span>}
+                </dt>
+                <dd className="num">{money(lineTotal(est.unitPrice, qty, false))}</dd>
+              </div>
+              <div>
+                <dt>Preparación del archivo</dt>
+                <dd className="num">{money(total - lineTotal(est.unitPrice, qty, false))}</dd>
+              </div>
+              <div className={s.total}>
+                <dt>Total estimado</dt>
+                <dd className="num">{money(total)}</dd>
+              </div>
+            </dl>
+            <p className={`${s.note} num`}>
+              {many && mode !== 'una' && skip.length > 0 && `Sin ${skip.length > 1 ? 'las planchas' : 'la plancha'} ${numbers(skip)}. `}
+              {mode === 'combinar' && many
+                ? `Una sola impresión al ${pct} % del tamaño original: ${grams(est.grams)} y ${duration(est.seconds)} por pieza.`
+                : all
+                  ? `Se imprimen por separado: ${grams(est.grams)} y ${duration(est.seconds)} por pieza, en total.`
+                  : `${grams(est.grams)} y ${duration(est.seconds)} por pieza.`}
+            </p>
             <p className="file-note" role="note">
               <b>Importante:</b> el archivo no se envía solo. Mandá el mensaje y adjuntá tu archivo en el mismo chat de WhatsApp.
             </p>
-          )}
-          {item && WA_PENDING && <p className={s.note}>Número de WhatsApp pendiente: el mensaje se abre para que elijas el contacto.</p>}
-          <p className={s.note}>Es una estimación hecha con la geometría del archivo. Te confirmamos el precio final antes de imprimir.</p>
-        </div>
+            <p className={s.note}>Es una estimación hecha con la geometría del archivo. Te confirmamos el precio final antes de imprimir.</p>
+            {WA_PENDING && <p className={s.note}>Número de WhatsApp pendiente: el mensaje se abre para que elijas el contacto.</p>}
+            <div className={s.dialogActions}>
+              <a className="btn" href={waLink(orderMessage([{ ...item, key: 'q' }]))} target="_blank" rel="noopener noreferrer" onClick={() => send.current?.close()}>
+                Abrir WhatsApp
+              </a>
+              <button type="button" className="btn btn--ghost" onClick={() => send.current?.close()}>
+                Volver
+              </button>
+            </div>
+          </dialog>
+        )}
       </aside>
     </div>
   );

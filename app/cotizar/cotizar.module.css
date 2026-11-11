@@ -72,45 +72,6 @@
 /* the tiles sit 14px inside the 32px stage, so their corners are 18px, concentric */
 .readout > :global(.glass) { border-radius: calc(var(--r-xl) - 14px); }
 
-/* plate picker for Bambu Studio projects: one plate on the bed at a time, like the slicer */
-.plates {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
-  max-width: calc(100% - 228px); /* wraps before it reaches the Centrar button */
-  padding: 4px 4px 4px 14px;
-  border-radius: calc(var(--r-xl) - 14px);
-  background: rgba(13, 17, 21, 0.72);
-  box-shadow: var(--ring);
-  font-size: var(--f-small);
-  color: var(--ink-2);
-}
-.plates span { margin-right: 6px; }
-.plates button {
-  min-width: 44px;
-  min-height: 44px;
-  border: 0;
-  border-radius: 14px;
-  background: none;
-  color: var(--ink-2);
-  cursor: pointer;
-  font-variant-numeric: tabular-nums;
-  transition: background-color 0.15s ease-out, color 0.15s ease-out, transform 0.15s ease-out;
-}
-.plates button:hover { color: var(--ink); background: rgba(238, 242, 245, 0.08); }
-.plates button:active { transform: var(--press); }
-.plates button[aria-pressed='true'] { background: var(--paper); color: var(--bg); }
-.plates button[data-warn] { box-shadow: inset 0 0 0 1px var(--danger); }
-/* a plate left out of the order stays visible, struck through, so it can come back */
-.plates button[data-off] { text-decoration: line-through; color: var(--ink-3); }
-.plates button[data-off][aria-pressed='true'] { background: var(--s3); color: var(--ink-2); }
-.plates .plateToggle { min-width: 0; margin-left: 4px; padding: 0 14px; box-shadow: inset 1px 0 0 rgba(238, 242, 245, 0.12); border-radius: 0 14px 14px 0; color: var(--ink); }
-.plates .plateToggle:disabled { color: var(--ink-3); cursor: default; }
-
 .panel {
   align-self: start;
   position: sticky;
@@ -174,6 +135,32 @@
 .chips button[aria-checked='true'],
 .segmented button[aria-checked='true'] { background: var(--paper); box-shadow: none; color: var(--bg); }
 .segmented { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+/* how to print a multi-plate file: one card per way, title and what it means */
+.modes { display: grid; gap: 8px; }
+.modes button {
+  display: grid;
+  gap: 2px;
+  min-height: 44px;
+  padding: 12px 15px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--s2);
+  box-shadow: var(--ring);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease-out, box-shadow 0.15s ease-out, transform 0.15s ease-out;
+}
+.modes button:hover { background: var(--s3); box-shadow: var(--ring-hover); }
+.modes button:active { transform: var(--press); }
+.modes b { font-weight: 600; }
+.modes span { font-size: var(--f-small); color: var(--ink-3); }
+.modes button[aria-checked='true'] { background: var(--paper); box-shadow: none; color: var(--bg); }
+.modes button[aria-checked='true'] span { color: #46525c; }
+.pick { font-size: var(--f-small); color: var(--ink-2); }
+/* plates to print look like every other choice in the panel: filled when picked */
+.chips button[aria-pressed='true'] { background: var(--paper); box-shadow: none; color: var(--bg); }
+.chips button:disabled { cursor: default; }
+.chips button[data-warn] { box-shadow: inset 0 0 0 1.5px var(--danger); }
 .note { font-size: var(--f-small); color: var(--ink-3); }
 .warn { font-size: var(--f-small); color: var(--danger); }
 
@@ -189,6 +176,38 @@
   background: var(--s1);
 }
 .priceRow { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.ask { justify-self: start; }
+
+/* the last step before WhatsApp: what the price is made of and what the customer must do */
+.dialog {
+  width: min(440px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 28px;
+  border: 0;
+  border-radius: var(--r-lg);
+  background: var(--s1);
+  color: var(--ink);
+  box-shadow: var(--ring), 0 30px 80px rgba(0, 0, 0, 0.55);
+  font-variant-numeric: tabular-nums;
+  opacity: 0;
+  translate: 0 8px;
+  transition: opacity 0.2s ease-out, translate 0.2s ease-out, overlay 0.2s allow-discrete, display 0.2s allow-discrete;
+}
+.dialog[open] { display: grid; gap: 16px; opacity: 1; translate: 0 0; }
+@starting-style {
+  .dialog[open] { opacity: 0; translate: 0 8px; }
+}
+.dialog::backdrop { background: rgba(5, 7, 9, 0.6); }
+.dialog h2 { font-size: 26px; }
+.breakdown { display: grid; gap: 10px; }
+.breakdown div { display: flex; justify-content: space-between; gap: 16px; }
+.breakdown dt { color: var(--ink-2); }
+.breakdown dd { margin: 0; }
+.breakdown .total { padding-top: 12px; border-top: 1px solid var(--line); }
+.breakdown .total dt { color: var(--ink); }
+.dialogActions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.dialogActions > * { flex: 1 1 auto; }
 .total { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
 
 @media (max-width: 960px) {
@@ -202,7 +221,6 @@
   .readout > :global(.glass) { border-radius: calc(var(--r-xl) - 12px); }
   /* the readouts leave the stage on phones, so Centrar takes the free bottom corner */
   .stage [data-view-tools] { top: auto; bottom: 12px; right: 12px; }
-  .plates { max-width: calc(100% - 28px); }
   .panel { position: static; max-height: none; }
   .price { position: static; margin: 0 -24px -24px; }
   .title { font-size: 24px; }
