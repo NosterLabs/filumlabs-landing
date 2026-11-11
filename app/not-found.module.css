@@ -1,0 +1,50 @@
+.page {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 36px;
+  min-height: calc(100svh - var(--nav-h));
+  padding-block: 48px;
+  text-align: center;
+}
+
+/* the failed print: where it stopped, as a share of the height from the top */
+.print { --cut: 46%; position: relative; width: min(100%, 720px); container-type: inline-size; }
+.ghost, .printed {
+  display: block;
+  font-size: 44cqi;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+}
+/* what never got printed: the outline, as the slicer previews it */
+.ghost { color: transparent; -webkit-text-stroke: 1px rgba(238, 242, 245, 0.2); }
+/* what did: solid layers from the bed up to the cut */
+.printed {
+  position: absolute;
+  inset: 0;
+  color: var(--ink);
+  clip-path: inset(var(--cut) 0 0 0);
+  -webkit-mask-image: repeating-linear-gradient(180deg, #000 0 0.034em, transparent 0.034em 0.042em);
+  mask-image: repeating-linear-gradient(180deg, #000 0 0.034em, transparent 0.034em 0.042em);
+  animation: grow 2.2s steps(18, end) both;
+}
+/* the nozzle, stuck on the last layer */
+.nozzle {
+  position: absolute;
+  left: -3%;
+  right: -3%;
+  top: var(--cut);
+  height: 2px;
+  background: var(--hot);
+  box-shadow: 0 0 16px 1px var(--hot);
+  animation: rise 2.2s steps(18, end) both;
+}
+@keyframes grow { from { clip-path: inset(100% 0 0 0); } }
+@keyframes rise { from { top: 100%; } }
+
+.copy { display: grid; justify-items: center; gap: 16px; }
+.eyebrow { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.copy h1 { font-size: var(--f-h2); max-width: 16ch; }
+.lede { max-width: 46ch; color: var(--ink-2); font-size: var(--f-lead); }
+.actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 8px 0 4px; }

@@ -15,7 +15,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const p = findProduct((await params).slug);
-  if (!p) return {};
+  if (!p) return { title: 'Página no encontrada · FilumLabs' }; // the not-found page's title
   return {
     title: `${p.name} en impresión 3D · FilumLabs`,
     description: `${p.description} En ${p.materials.join(' o ')}, con entrega en Ituzaingó y Zona Oeste.`,

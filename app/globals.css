@@ -44,7 +44,8 @@
 }
 
 * { box-sizing: border-box; margin: 0; }
-html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--nav-h) + 16px); }
+/* no tap flash on phones: every control has its own pressed state */
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--nav-h) + 16px); -webkit-tap-highlight-color: transparent; }
 body {
   background: var(--bg);
   color: var(--ink);
@@ -54,7 +55,11 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: clip;
+  /* the page reads like an app: dragging over it or clicking fast selects nothing; fields stay editable */
+  -webkit-user-select: none;
+  user-select: none;
 }
+input, textarea, [contenteditable] { -webkit-user-select: text; user-select: text; }
 img, svg, canvas, video { display: block; max-width: 100%; }
 a { color: inherit; text-underline-offset: 0.22em; text-decoration-thickness: 1px; }
 button, input, select, textarea { font: inherit; color: inherit; }
@@ -322,24 +327,91 @@ p, li, figcaption, summary { text-wrap: pretty; }
 .footer-drop[data-drag='true']::before { border-color: var(--hot); inset: 8px; border-radius: calc(var(--r-xl) - 8px); }
 .footer-drop h2 { font-size: var(--f-h2); max-width: 16ch; }
 .footer-drop p { color: var(--ink-2); }
-.footer-base {
+.footer-grid {
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 24px;
-  margin-top: 48px;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 2fr);
+  gap: 48px;
+  margin-top: clamp(48px, 6vw, 80px);
+  padding-top: 40px;
+  border-top: 1px solid var(--line);
 }
-.footer-brand { display: grid; gap: 8px; }
+.footer-brand { display: grid; gap: 10px; align-content: start; justify-items: start; }
 .footer-brand .nav-brand { font-size: 26px; }
 .footer-by { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-3); }
 .footer-by svg { height: 16px; width: auto; color: var(--ink-2); }
-.footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 26px; list-style: none; padding: 0; }
-.footer-links a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink-2); text-decoration: none; transition: color 0.2s ease-out; }
-.footer-links a:hover { color: var(--ink); }
-.footer-legal { margin-top: 40px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--ink-3); }
-@media (max-width: 860px) {
-  .footer-base { grid-template-columns: 1fr; justify-items: start; }
-  .footer-links { justify-content: flex-start; }
+.footer-pitch { max-width: 34ch; margin: 8px 0 10px; color: var(--ink-2); }
+.footer-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+.footer-cols h3 { margin-bottom: 8px; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.footer-cols ul { list-style: none; padding: 0; }
+.footer-cols a { display: inline-flex; align-items: center; min-height: 40px; color: var(--ink-2); text-decoration: none; transition: color 0.2s ease-out; }
+.footer-cols a:hover { color: var(--ink); }
+.footer-areas { color: var(--ink-3); font-size: var(--f-small); line-height: 1.7; }
+.footer-legal { margin-top: 56px; display: flex; justify-content: space-between; align-items: center; gap: 8px 24px; flex-wrap: wrap; font-size: 13px; color: var(--ink-3); }
+/* the sign-off: the name as a print, its layer lines showing, built up from the bed as the page ends */
+/* clip, not hidden: a hidden box is a scroll container, and view() would track it instead of the page */
+.footer-mark { position: relative; margin-top: 20px; overflow: clip; container-type: inline-size; }
+.footer-mark span {
+  display: block;
+  font-size: 23.5cqi;
+  font-weight: 300;
+  letter-spacing: -0.03em; /* any tighter and the i's dot touches the F */
+  line-height: 0.92;
+  text-align: center;
+  white-space: nowrap;
+  color: var(--ink);
+  -webkit-mask-image: repeating-linear-gradient(180deg, #000 0 0.034em, transparent 0.034em 0.042em);
+  mask-image: repeating-linear-gradient(180deg, #000 0 0.034em, transparent 0.034em 0.042em);
+}
+.footer-mark b { font-weight: 600; }
+/* the heat: an orange copy of the word, shown only in a soft circle around the mouse (--x, --y from FooterMark) */
+.footer-mark .footer-heat {
+  position: absolute;
+  inset: 0;
+  color: var(--hot);
+  opacity: 0;
+  transition: opacity 0.35s ease-out;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(circle 16cqi at var(--x, 50%) var(--y, 50%), #000 10%, transparent 100%), repeating-linear-gradient(180deg, #000 0 0.034em, transparent 0.034em 0.042em);
+  mask-image: radial-gradient(circle 16cqi at var(--x, 50%) var(--y, 50%), #000 10%, transparent 100%), repeating-linear-gradient(180deg, #000 0 0.034em, transparent 0.034em 0.042em);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+@media (hover: hover) and (pointer: fine) {
+  .footer-mark:hover .footer-heat { opacity: 1; }
+}
+/* the nozzle: a hot line riding the top of what is printed so far */
+.footer-mark::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-top: 2px solid var(--hot);
+  box-shadow: 0 -6px 18px -6px var(--hot);
+  opacity: 0;
+  pointer-events: none;
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* the shorthand gives the scroll-driven duration (auto); the timeline must come after it */
+    .footer-mark span { animation: markPrint steps(28, end) both; }
+    .footer-mark::after { animation: markNozzle steps(28, end) both; }
+    .footer-mark span, .footer-mark::after { animation-timeline: view(); animation-range: entry 10% entry 100%; }
+  }
+}
+@keyframes markPrint {
+  from { clip-path: inset(100% 0 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+@keyframes markNozzle {
+  from { transform: translateY(100%); opacity: 1; }
+  92% { opacity: 1; }
+  to { transform: none; opacity: 0; }
+}
+@media (max-width: 960px) {
+  .footer-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .footer-cols { grid-template-columns: 1fr 1fr; }
+  .footer-cols > :last-child { grid-column: 1 / -1; }
 }
 
 /* ---------- Motion: entrances are added by components/Reveal.tsx, content shows without script ---------- */

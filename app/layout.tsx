@@ -6,6 +6,7 @@ import { Mark, NosterLabs } from '@/components/Brand';
 import Nav from '@/components/Nav';
 import Reveal from '@/components/Reveal';
 import EndShot from '@/components/EndShot';
+import FooterMark from '@/components/FooterMark';
 import JsonLd from '@/components/JsonLd';
 import { business, website } from '@/lib/seo';
 import { DropArea, UploadButton } from '@/components/Upload';
@@ -47,7 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <p>Soltalo acá o elegilo, y en segundos ves medidas, gramos, tiempo y precio.</p>
               <UploadButton />
             </DropArea>
-            <div className="footer-base">
+            <div className="footer-grid">
               <div className="footer-brand">
                 <Link href="/" className="nav-brand" aria-label="FilumLabs, inicio">
                   <Mark />
@@ -58,27 +59,44 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <span className="footer-by">
                   by <NosterLabs />
                 </span>
+                <p className="footer-pitch">Impresión 3D a pedido en Ituzaingó. Del archivo a la pieza, con el precio antes de empezar.</p>
+                {WA_PENDING ? (
+                  <span className="wa-note">WhatsApp: número pendiente</span>
+                ) : (
+                  <a className="btn btn--ghost btn--sm" href={`https://wa.me/${SHOP.whatsapp}`} target="_blank" rel="noopener noreferrer">
+                    Escribinos por WhatsApp
+                  </a>
+                )}
               </div>
-              <ul className="footer-links">
-                <li><Link href="/catalogo">Catálogo</Link></li>
-                <li><Link href="/cotizar">Cotizar</Link></li>
-                <li><Link href="/mayoristas">Mayoristas</Link></li>
-                <li><Link href="/impresion-3d-ituzaingo">Ituzaingó y Zona Oeste</Link></li>
-                <li><Link href="/#preguntas">Preguntas</Link></li>
-                <li>
-                  {WA_PENDING ? (
-                    <span className="wa-note">WhatsApp: número pendiente</span>
-                  ) : (
-                    <a href={`https://wa.me/${SHOP.whatsapp}`} target="_blank" rel="noopener noreferrer">WhatsApp</a>
-                  )}
-                </li>
-              </ul>
-              <a href="#main" className="link footer-top">Volver arriba</a>
+              <nav className="footer-cols" aria-label="Pie de página">
+                <div>
+                  <h3>Imprimir</h3>
+                  <ul>
+                    <li><Link href="/cotizar">Cotizar un archivo</Link></li>
+                    <li><Link href="/catalogo">Catálogo</Link></li>
+                    <li><Link href="/mayoristas">Mayoristas</Link></li>
+                  </ul>
+                </div>
+                <div>
+                  <h3>FilumLabs</h3>
+                  <ul>
+                    <li><Link href="/#como-funciona">Cómo funciona</Link></li>
+                    <li><Link href="/#preguntas">Preguntas</Link></li>
+                    <li><a href="#main">Volver arriba</a></li>
+                  </ul>
+                </div>
+                <div>
+                  <h3>Entregas</h3>
+                  <p className="footer-areas">{SHOP.areas.join(' · ')}</p>
+                  <Link href="/impresion-3d-ituzaingo">Ituzaingó y Zona Oeste</Link>
+                </div>
+              </nav>
             </div>
             <div className="footer-legal">
               <span>© 2026 FilumLabs. Impresión 3D en Ituzaingó, Zona Oeste del Gran Buenos Aires.</span>
               <span>Tus archivos se procesan en tu navegador y no se guardan en ningún servidor.</span>
             </div>
+            <FooterMark />
           </footer>
         </CartProvider>
         <Reveal />
