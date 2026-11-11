@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FilumLabs · Isotipo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1115;
+    --fog-a: #4d6576;
+    --fog-b: #26333d;
+    --ink: #eef2f5;
+    --muted: rgba(238, 242, 245, .58);
+    --glass: rgba(255, 255, 255, .07);
+    --glass-hi: rgba(255, 255, 255, .16);
+    --edge: rgba(255, 255, 255, .16);
+    --shadow: rgba(0, 0, 0, .38);
+  }
+  :root[data-theme="light"] {
+    --bg: #e6eaee;
+    --fog-a: #b9c7d2;
+    --fog-b: #f6f7f8;
+    --ink: #11161b;
+    --muted: rgba(17, 22, 27, .6);
+    --glass: rgba(255, 255, 255, .38);
+    --glass-hi: rgba(255, 255, 255, .7);
+    --edge: rgba(255, 255, 255, .75);
+    --shadow: rgba(40, 55, 70, .16);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Urbanist', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    transition: background .5s, color .5s;
+  }
+  /* fog behind the glass, so backdrop-filter has something to bend */
+  .fog { position: fixed; inset: 0; z-index: -1; overflow: hidden; }
+  .fog i { position: absolute; border-radius: 50%; filter: blur(90px); }
+  .fog i:nth-child(1) { width: 70vw; height: 70vw; left: -15vw; top: -25vw; background: var(--fog-a); opacity: .55; }
+  .fog i:nth-child(2) { width: 40vw; height: 60vw; left: 38vw; top: 20vh; background: #000; opacity: .45; }
+  .fog i:nth-child(3) { width: 50vw; height: 50vw; right: -20vw; bottom: -20vw; background: var(--fog-b); opacity: .8; }
+  :root[data-theme="light"] .fog i:nth-child(2) { background: #8d9aa5; opacity: .35; }
+  .grain { position: fixed; inset: 0; pointer-events: none; opacity: .07; z-index: 50;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+  .glass {
+    background: linear-gradient(140deg, var(--glass-hi), var(--glass) 45%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    backdrop-filter: blur(24px) saturate(150%);
+    border: 1px solid var(--edge);
+    box-shadow: inset 0 1px 0 var(--glass-hi), 0 24px 60px var(--shadow);
+  }
+
+  header { max-width: 1180px; margin: 0 auto; padding: 72px 16px 56px; display: flex; justify-content: space-between; align-items: end; gap: 24px; flex-wrap: wrap; }
+  h1 { font-weight: 300; font-size: clamp(44px, 7vw, 84px); letter-spacing: -.03em; line-height: .95; }
+  h1 b { font-weight: 500; }
+  .eyebrow, .mono { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .eyebrow { margin-top: 14px; }
+  button.toggle { font: inherit; font-size: 14px; color: var(--ink); padding: 12px 22px; border-radius: 999px; cursor: pointer; }
+  button.toggle:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+  main { max-width: 1180px; margin: 0 auto; padding: 0 16px 96px; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+  .card { border-radius: 32px; padding: 28px; display: flex; flex-direction: column; gap: 22px; transition: transform .6s cubic-bezier(.16,1,.3,1); }
+  .card:hover { transform: translateY(-4px); }
+  .stage { aspect-ratio: 1.25; border-radius: 22px; display: grid; place-items: center; }
+  .stage svg { width: 44%; height: auto; }
+  .lockup { display: flex; align-items: center; gap: 12px; }
+  .lockup svg { width: 34px; height: 34px; flex: none; }
+  .word { font-size: 26px; letter-spacing: -.02em; line-height: 1; }
+  .word b { font-weight: 600; }
+  .word span { font-weight: 300; opacity: .7; }
+  .by { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); margin-top: 5px; }
+  .meta h2 { font-size: 20px; font-weight: 500; letter-spacing: -.01em; }
+  .meta p { margin-top: 8px; font-size: 15px; line-height: 1.55; color: var(--muted); font-weight: 400; }
+  .sizes { display: flex; align-items: end; gap: 14px; padding-top: 18px; border-top: 1px solid var(--edge); }
+  .sizes svg { display: block; }
+  .sizes .mono { margin-left: auto; white-space: nowrap; letter-spacing: .08em; }
+  footer { text-align: center; padding-bottom: 48px; }
+  .round-head { max-width: 1180px; margin: 0 auto; padding: 0 16px 20px; }
+</style>
+</head>
+<body>
+<div class="fog" aria-hidden="true"><i></i><i></i><i></i></div>
+<div class="grain" aria-hidden="true"></div>
+
+<header>
+  <div>
+    <h1><b>Filum</b>Labs</h1>
+    <p class="eyebrow">by NosterLabs · Exploración de isotipo · Ronda 2</p>
+  </div>
+  <button class="toggle glass" type="button" id="theme">Ver en fondo claro</button>
+</header>
+
+<p class="mono round-head">Ronda 2 · Variantes de 01, 06, 18 y 21</p>
+<main id="grid2"></main>
+<p class="mono round-head">Ronda 1 · 24 propuestas</p>
+<main id="grid"></main>
+
+<footer><p class="mono">Borrador 01 · Octubre 2026</p></footer>
+
+<script>
+const logos = [
+  {
+    id: '01', title: 'Trazo', tag: 'Línea · hilo',
+    text: 'Una F dibujada como la recorre la boquilla: un solo trazo con curva suave. El punto adelantado es el extrusor depositando la siguiente línea.',
+    svg: `<g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M67 26H41a8 8 0 0 0-8 8v42"/><path d="M33 50h16"/></g>
+      <circle cx="61" cy="50" r="4.5" fill="currentColor"/>`
+  },
+  {
+    id: '02', title: 'En curso', tag: 'Capas · línea',
+    text: 'Una esfera cortada en capas, como la ve el slicer. La capa superior todavía se está imprimiendo: la pieza nunca está terminada hasta que es tuya.',
+    svg: `<g stroke="currentColor" stroke-width="4" stroke-linecap="round">
+      <path d="M32.1 28H50"/><path d="M26 36h48"/><path d="M23.1 44h53.8"/><path d="M22.6 52h54.8"/>
+      <path d="M24.2 60h51.6"/><path d="M28.5 68h43"/><path d="M37.5 76h25"/></g>
+      <circle cx="59" cy="28" r="3" fill="currentColor"/>`
+  },
+  {
+    id: '03', title: 'Cama', tag: 'Matriz · precisión',
+    text: 'La grilla de nivelación de la cama. Los puntos encendidos forman la F; el punto suelto abajo a la derecha es el laboratorio: el detalle que se mide.',
+    svg: (() => {
+      const on = new Set(['0,0','1,0','2,0','3,0','0,1','0,2','1,2','2,2','0,3','0,4','4,4']);
+      let s = '<g fill="currentColor">';
+      for (let y = 0; y < 5; y++) for (let x = 0; x < 5; x++)
+        s += `<circle cx="${26 + x * 12}" cy="${26 + y * 12}" r="3.6"${on.has(x + ',' + y) ? '' : ' opacity=".16"'}/>`;
+      return s + '</g>';
+    })()
+  },
+  {
+    id: '04', title: 'Bobina', tag: 'Geometría · hilo',
+    text: 'Un carrete visto de frente con el filamento saliendo tangente. Habla de materia prima y de origen, sin decir "impresora".',
+    svg: `<g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round">
+      <path d="M82 76H46a26 26 0 1 1 26-26"/><circle cx="46" cy="50" r="15"/></g>
+      <circle cx="46" cy="50" r="4.5" fill="currentColor"/>`
+  },
+  {
+    id: '05', title: 'Placa', tag: 'Sólido · espacio negativo',
+    text: 'Una placa de vidrio con la F y el punto calados con bordes redondos. Es la más lista para ícono de app y la que mejor lleva el efecto liquid glass.',
+    svg: `<defs><mask id="m5"><rect width="100" height="100" fill="#fff"/>
+      <g fill="#000"><rect x="36" y="33" width="8.5" height="34" rx="4.25"/><rect x="36" y="33" width="28" height="8.5" rx="4.25"/>
+      <rect x="36" y="47" width="20" height="8.5" rx="4.25"/><circle cx="61" cy="62.5" r="4.25"/></g></mask></defs>
+      <rect x="20" y="20" width="60" height="60" rx="18" fill="currentColor" mask="url(#m5)"/>`
+  },
+  {
+    id: '06', title: 'Capa a capa', tag: 'Volumen · capas',
+    text: 'Un cubo isométrico donde solo la cara superior es sólida; los lados son líneas de capa. Lee como modelo 3D y como proceso al mismo tiempo.',
+    svg: `<polygon points="50,20 76,35 50,50 24,35" fill="currentColor" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+      <g fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M24 43l26 15 26-15"/><path d="M24 51l26 15 26-15"/><path d="M24 59l26 15 26-15"/><path d="M24 67l26 15 26-15"/></g>`
+  },
+  {
+    id: '07', title: 'Relleno', tag: 'Línea continua · hilo',
+    text: 'El recorrido del relleno rectilíneo: un hilo que nunca se corta y va y vuelve. La última pasada queda a medias, con el punto de la boquilla.',
+    svg: `<path d="M30 72V33a5 5 0 0 1 10 0v34a5 5 0 0 0 10 0V33a5 5 0 0 1 10 0v34a5 5 0 0 0 10 0V52" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="70" cy="38" r="3.5" fill="currentColor"/>`
+  },
+  {
+    id: '08', title: 'Boquilla', tag: 'Objeto · proceso',
+    text: 'El hotend visto de perfil sobre la línea que acaba de depositar. La línea solo existe detrás de la boquilla: la marca es lo que va dejando.',
+    svg: `<rect x="35" y="22" width="30" height="16" rx="4" fill="currentColor"/>
+      <path d="M41 43h18l-6 13h-6z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M24 72h26" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>`
+  },
+  {
+    id: '09', title: 'Ligadura', tag: 'Monograma · tipografía',
+    text: 'Una ligadura fl editorial: el travesaño de la f se extiende hasta tocar la l. Es la opción más tipográfica y la que mejor suena a marca de autor.',
+    svg: `<g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M40 76V38a12 12 0 0 1 12-12h2"/><path d="M30 46h34"/><path d="M64 24v44a8 8 0 0 0 8 8"/></g>`
+  },
+  {
+    id: '10', title: 'Lente', tag: 'Geometría · vidrio',
+    text: 'Un anillo de vidrio que se apoya sobre una forma sólida y la recorta. Es literalmente el liquid glass: materia vista a través de una lente.',
+    svg: `<defs><mask id="m10"><rect width="100" height="100" fill="#fff"/><circle cx="60" cy="50" r="24" fill="#000"/></mask></defs>
+      <circle cx="38" cy="50" r="21" fill="currentColor" mask="url(#m10)"/>
+      <circle cx="60" cy="50" r="20" fill="none" stroke="currentColor" stroke-width="4"/>`
+  },
+  {
+    id: '11', title: 'Gyroid', tag: 'Onda · estructura',
+    text: 'El patrón gyroid, el relleno más resistente, dentro de un perímetro. Comunica ingeniería interna: lo que no se ve pero sostiene la pieza.',
+    svg: `<defs><clipPath id="c11"><circle cx="50" cy="50" r="22"/></clipPath></defs>
+      <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" stroke-width="4"/>
+      <g clip-path="url(#c11)" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round">
+      <path d="M22 38q7-8 14 0t14 0 14 0 14 0"/><path d="M22 50q7 8 14 0t14 0 14 0 14 0"/><path d="M22 62q7-8 14 0t14 0 14 0 14 0"/></g>`
+  },
+  {
+    id: '12', title: 'Estrato', tag: 'Capas · letra',
+    text: 'La F levantada capa por capa. En grande se ven las líneas de impresión; a 16 px las capas se funden y queda una F sólida y legible.',
+    svg: `<g stroke="currentColor" stroke-width="5" stroke-linecap="round">
+      <path d="M36 26h30"/><path d="M36 34h30"/><path d="M36 42h0"/><path d="M36 50h20"/>
+      <path d="M36 58h20"/><path d="M36 66h0"/><path d="M36 74h0"/></g>`
+  },
+  {
+    id: '13', title: 'Prisma', tag: 'Geometría · luz',
+    text: 'Una línea entra al prisma y sale abierta en tres. Una idea simple que llega como algo más rico: el archivo entra y sale una pieza.',
+    svg: `<path d="M50 26l22 40H28z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+      <g stroke="currentColor" stroke-width="3.5" stroke-linecap="round">
+      <path d="M14 52l23-4"/><path d="M65 48l21-5"/><path d="M65 48h21" opacity=".6"/><path d="M65 48l21 5" opacity=".3"/></g>`
+  },
+  {
+    id: '14', title: 'Cinta', tag: 'Planos · profundidad',
+    text: 'Una F doblada como una cinta, con planos en tres tonos. Le da volumen sin dibujar un cubo y en monocromo se ve muy premium.',
+    svg: `<g fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+      <path d="M32 24h10v52H32z" opacity=".45"/><path d="M32 24h38l-6 10H32z"/><path d="M42 44h18l-5 9H42z" opacity=".8"/></g>`
+  },
+  {
+    id: '15', title: 'Panal', tag: 'Polígono · estructura',
+    text: 'Una celda del relleno panal con un núcleo sólido descentrado. Estructura, resistencia y un punto de foco que rompe la simetría.',
+    svg: `<polygon points="50,22 74.2,36 74.2,64 50,78 25.8,64 25.8,36" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+      <polygon points="58,35 65.8,39.5 65.8,48.5 58,53 50.2,48.5 50.2,39.5" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>`
+  },
+  {
+    id: '16', title: 'Corte', tag: 'Sólido · slicing',
+    text: 'Una esfera rebanada y desplazada: el instante en que el slicer parte el modelo. Es sólida, se reconoce enseguida y aguanta cualquier tamaño.',
+    svg: `<g fill="currentColor" stroke="currentColor" stroke-width="3" stroke-linejoin="round">
+      <path d="M20 46a28 28 0 0 1 56 0z"/><path d="M26 54a28 28 0 0 0 56 0z"/></g>`
+  },
+  {
+    id: '17', title: 'Lazo', tag: 'Hilo · gesto',
+    text: 'Filum es hilo en latín. Un solo filamento que entra, da una vuelta y sigue: lo artesanal dentro de un proceso industrial.',
+    svg: `<path d="M16 68c22 0 46-6 46-28a10 10 0 0 0-20 0c0 22 24 28 42 28" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>`
+  },
+  {
+    id: '18', title: 'Calibre', tag: 'Marcas · precisión',
+    text: 'Las marcas de encuadre de un calibrador rodean un punto descentrado. Habla de medida, tolerancia y control de calidad, justo lo que valora el mayorista.',
+    svg: `<g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M24 38V24h14"/><path d="M62 24h14v14"/><path d="M76 62v14H62"/><path d="M38 76H24V62"/></g>
+      <circle cx="56" cy="56" r="6" fill="currentColor"/>`
+  },
+  {
+    id: '19', title: 'Gota', tag: 'Sólido · materia',
+    text: 'Una gota de material fundido con una capa ya depositada adentro. Es el momento entre el filamento y la pieza, cálido sin dejar de ser preciso.',
+    svg: `<defs><mask id="m19"><rect width="100" height="100" fill="#fff"/><path d="M36 60h28" stroke="#000" stroke-width="4.5" stroke-linecap="round"/></mask></defs>
+      <path d="M50 20c0 0 24 26 24 38a24 24 0 0 1-48 0c0-12 24-38 24-38z" fill="currentColor" mask="url(#m19)"/>`
+  },
+  {
+    id: '20', title: 'Escalón', tag: 'Perfil · capas',
+    text: 'El efecto escalón de las capas sobre una curva, hecho forma sólida. Es un defecto técnico convertido en firma: lo entiende quien imprime.',
+    svg: `<path d="M29 76V26h12v10h12v10h10v12h8v18z" fill="currentColor" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>`
+  },
+  {
+    id: '21', title: 'Encastre', tag: 'Piezas · ajuste',
+    text: 'Dos escuadras que encajan sin tocarse, separadas por una tolerancia exacta. Piezas que calzan a la primera: un mensaje claro para el mayorista.',
+    svg: `<g fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M28 62V28h32"/><path d="M72 38v34H40"/></g>`
+  },
+  {
+    id: '22', title: 'Sello', tag: 'Emblema · espacio negativo',
+    text: 'Un disco con la F calada y un anillo exterior, como un cuño. Es la versión más de producto exclusivo: queda bien grabada, en la caja o en la pieza.',
+    svg: `<defs><mask id="m22"><rect width="100" height="100" fill="#fff"/>
+      <g fill="#000"><rect x="40" y="34" width="8" height="32" rx="4"/><rect x="40" y="34" width="24" height="8" rx="4"/><rect x="40" y="47" width="17" height="8" rx="4"/></g></mask></defs>
+      <circle cx="50" cy="50" r="30" fill="currentColor" mask="url(#m22)"/>
+      <circle cx="50" cy="50" r="36" fill="none" stroke="currentColor" stroke-width="2.5"/>`
+  },
+  {
+    id: '23', title: 'Eslabón', tag: 'Hilo · entrelazado',
+    text: 'Dos anillos que pasan uno por encima y otro por debajo, como hilos tejidos. Son FilumLabs y NosterLabs unidos, o el taller y el cliente.',
+    svg: `<defs><clipPath id="t23"><rect width="100" height="50"/></clipPath><clipPath id="b23"><rect y="50" width="100" height="50"/></clipPath>
+      <mask id="ma23"><rect width="100" height="100" fill="#fff"/><circle cx="58" cy="50" r="16" fill="none" stroke="#000" stroke-width="12" clip-path="url(#t23)"/></mask>
+      <mask id="mb23"><rect width="100" height="100" fill="#fff"/><circle cx="42" cy="50" r="16" fill="none" stroke="#000" stroke-width="12" clip-path="url(#b23)"/></mask></defs>
+      <g fill="none" stroke="currentColor" stroke-width="5"><circle cx="42" cy="50" r="16" mask="url(#ma23)"/><circle cx="58" cy="50" r="16" mask="url(#mb23)"/></g>`
+  },
+  {
+    id: '24', title: 'Cumbre', tag: 'Geometría · capas',
+    text: 'Una pirámide levantada en tres bandas, cada vez más anchas hacia la base. Sugiere crecimiento y nivel superior, el tono exclusivo de la marca.',
+    svg: `<g fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+      <polygon points="50,22 62.86,46 37.14,46"/><polygon points="33.93,52 66.07,52 71.43,62 28.57,62"/><polygon points="25.36,68 74.64,68 80,78 20,78"/></g>`
+  }
+];
+
+const round2 = [
+  {
+    id: '01·A', title: 'Trazo grueso', tag: 'Base 01',
+    text: 'La misma F de un trazo con más peso y un extrusor más grande. Resuelve el problema de la 01 original: ahora se lee a 16 px.',
+    svg: `<g fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M66 27H43a9 9 0 0 0-9 9v40"/><path d="M34 52h13"/></g>
+      <circle cx="61" cy="52" r="5.5" fill="currentColor"/>`
+  },
+  {
+    id: '01·B', title: 'Trazo en placa', tag: 'Base 01',
+    text: 'La F de la boquilla dentro de una placa de vidrio. El contenedor le da presencia de ícono de app sin perder la ligereza del trazo.',
+    svg: `<rect x="18" y="18" width="64" height="64" rx="20" fill="none" stroke="currentColor" stroke-width="3"/>
+      <g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M62 34H45a6 6 0 0 0-6 6v26"/><path d="M39 50h11"/></g>
+      <circle cx="58" cy="50" r="4" fill="currentColor"/>`
+  },
+  {
+    id: '01·C', title: 'Trazo minúscula', tag: 'Base 01',
+    text: 'La versión en minúscula: una f con gancho y el extrusor al final del travesaño. Es más amable y editorial, con el mismo gesto de boquilla.',
+    svg: `<g fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M44 76V38a12 12 0 0 1 12-12h6"/><path d="M34 46h20"/></g>
+      <circle cx="64" cy="46" r="4.5" fill="currentColor"/>`
+  },
+  {
+    id: '06·A', title: 'Cubo abierto', tag: 'Base 06',
+    text: 'Tres capas en vez de cuatro, más gruesas y con más aire. Se aleja del ícono genérico de "capas" y gana lectura en tamaño chico.',
+    svg: `<polygon points="50,22 74,36 50,50 26,36" fill="currentColor" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+      <g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M26 46l24 14 24-14"/><path d="M26 55l24 14 24-14"/><path d="M26 64l24 14 24-14"/></g>`
+  },
+  {
+    id: '06·B', title: 'Cubo en curso', tag: 'Base 06 + 02',
+    text: 'El cubo sin tapa: la última capa va por la mitad y el extrusor marca hacia dónde sigue. Es un objeto y también un proceso en marcha.',
+    svg: `<g fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M24 31l26 15"/><path d="M24 39l26 15 26-15"/><path d="M24 47l26 15 26-15"/><path d="M24 55l26 15 26-15"/><path d="M24 63l26 15 26-15"/></g>
+      <circle cx="58" cy="41.4" r="3" fill="currentColor"/>`
+  },
+  {
+    id: '06·C', title: 'Modelo a capas', tag: 'Base 06',
+    text: 'Una cara sólida, otra en vidrio y otra ya laminada. Muestra el recorrido completo, del archivo a la pieza, en un solo objeto.',
+    svg: `<g fill="currentColor" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round">
+      <polygon points="50,20 76,35 50,50 24,35"/><polygon points="24,42 48,55.85 48,81.85 24,68" opacity=".45"/></g>
+      <g fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round">
+      <path d="M52 57l24-13.85"/><path d="M52 65l24-13.85"/><path d="M52 73l24-13.85"/><path d="M52 81l24-13.85"/></g>`
+  },
+  {
+    id: '18·A', title: 'Calibre F', tag: 'Base 18 + 01',
+    text: 'Las marcas de encuadre enmarcan una F en lugar del punto. Ya no parece un ícono de escanear: es la letra de la marca bajo medición.',
+    svg: `<g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M24 36V24h12"/><path d="M64 24h12v12"/><path d="M76 64v12H64"/><path d="M36 76H24V64"/>
+      <path d="M42 62V38h16"/><path d="M42 50h11"/></g>`
+  },
+  {
+    id: '18·B', title: 'Volumen de impresión', tag: 'Base 18 + 02',
+    text: 'El encuadre como el volumen de la cama, con una pieza que se levanta adentro. Muestra precisión y producción en la misma imagen.',
+    svg: `<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <g stroke-width="4.5"><path d="M24 36V24h12"/><path d="M64 24h12v12"/><path d="M76 64v12H64"/><path d="M36 76H24V64"/></g>
+      <g stroke-width="4"><path d="M38 62h24"/><path d="M38 53h24"/><path d="M38 44h10"/></g></g>
+      <circle cx="57" cy="44" r="3" fill="currentColor"/>`
+  },
+  {
+    id: '18·C', title: 'Calibre rombo', tag: 'Base 18',
+    text: 'Las marcas giran 45° y apuntan al centro como las agujas de un instrumento. Mantiene la idea de precisión pero con una forma propia.',
+    svg: `<g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M41 30l9-9 9 9"/><path d="M70 41l9 9-9 9"/><path d="M59 70l-9 9-9-9"/><path d="M30 59l-9-9 9-9"/></g>
+      <circle cx="50" cy="50" r="6" fill="currentColor"/>`
+  },
+  {
+    id: '21·A', title: 'Encastre F', tag: 'Base 21 + 01',
+    text: 'La escuadra de arriba gana un travesaño y se vuelve F; la de abajo encaja con ella. La letra queda escondida dentro del ajuste.',
+    svg: `<g fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M28 64V28h32"/><path d="M32 46h12"/><path d="M72 38v34H44"/></g>`
+  },
+  {
+    id: '21·B', title: 'Encastre macizo', tag: 'Base 21',
+    text: 'Las escuadras más gruesas y la tolerancia más justa. Es más pesada y más industrial, y se lee como un bloque sólido a cualquier tamaño.',
+    svg: `<g fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M28 58V28h30"/><path d="M72 42v30H42"/></g>`
+  },
+  {
+    id: '21·C', title: 'Encastre núcleo', tag: 'Base 21 + 18',
+    text: 'Las dos piezas encajan alrededor de un punto: el encastre de la 21 con el foco de la 18. Lo que se protege y se mide está en el centro.',
+    svg: `<g fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M28 62V28h32"/><path d="M72 38v34H40"/></g>
+      <circle cx="50" cy="50" r="6" fill="currentColor"/>`
+  },
+  {
+    id: '01+21', title: 'Trazo + Encastre', tag: 'Híbrido',
+    text: 'La F de la boquilla, con su extrusor, encaja con una escuadra que la completa. Junta el gesto de la 01 con el ajuste de la 21.',
+    svg: `<g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M30 72V36a8 8 0 0 1 8-8h26"/><path d="M30 50h14"/><path d="M72 40v24a8 8 0 0 1-8 8H48"/></g>
+      <circle cx="54" cy="50" r="4.5" fill="currentColor"/>`
+  }
+];
+
+const svg = (inner, size) =>
+  `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"${size ? ` width="${size}" height="${size}"` : ''} aria-hidden="true">${inner}</svg>`;
+
+const card = l => `
+  <article class="card glass">
+    <div class="stage glass">${svg(l.svg)}</div>
+    <div class="lockup">${svg(l.svg)}
+      <div><div class="word"><b>Filum</b><span>Labs</span></div><span class="by">by NosterLabs</span></div>
+    </div>
+    <div class="meta">
+      <p class="mono">${l.id} · ${l.tag}</p>
+      <h2 style="margin-top:6px">${l.title}</h2>
+      <p>${l.text}</p>
+    </div>
+    <div class="sizes">${svg(l.svg, 16)}${svg(l.svg, 24)}${svg(l.svg, 32)}${svg(l.svg, 48)}<span class="mono">16 · 24 · 32 · 48 px</span></div>
+  </article>`;
+document.getElementById('grid2').innerHTML = round2.map(card).join('');
+document.getElementById('grid').innerHTML = logos.map(card).join('');
+
+const btn = document.getElementById('theme');
+btn.addEventListener('click', () => {
+  const light = document.documentElement.dataset.theme !== 'light';
+  document.documentElement.dataset.theme = light ? 'light' : 'dark';
+  btn.textContent = light ? 'Ver en fondo oscuro' : 'Ver en fondo claro';
+});
+</script>
+</body>
+</html>

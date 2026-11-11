@@ -1,0 +1,36 @@
+.list { display: grid; border-top: 1px solid var(--line); }
+.item { border-bottom: 1px solid var(--line); interpolate-size: allow-keywords; }
+.item summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 76px;
+  padding: 18px 0;
+  font-size: var(--f-h3);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  cursor: pointer;
+  list-style: none;
+}
+.item summary::-webkit-details-marker { display: none; }
+.item summary:hover span { opacity: 0.8; }
+/* a plus that turns into a minus */
+.item i { position: relative; flex: none; width: 18px; height: 18px; }
+.item i::before, .item i::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1.5px;
+  margin-top: -0.75px;
+  background: currentColor;
+  transition: transform 0.4s var(--ease);
+}
+.item i::after { transform: rotate(90deg); }
+.item[open] i::after { transform: rotate(0deg); }
+.item p { max-width: 62ch; padding-bottom: 24px; color: var(--ink-2); }
+/* height animates where the browser supports it; elsewhere it opens at once */
+.item::details-content { block-size: 0; overflow: hidden; transition: block-size 0.45s var(--ease), content-visibility 0.45s allow-discrete; }
+.item[open]::details-content { block-size: auto; }

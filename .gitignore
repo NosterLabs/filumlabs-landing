@@ -1,0 +1,66 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Next.js and build outputs
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# Turbopack
+.turbo/
+
+# Testing & Coverage
+coverage/
+.nyc_output/
+
+# Secrets: only .env.example may be committed
+.env*
+!.env.example
+
+# Debug and process logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local tool state (agents, design hooks, collab servers)
+.taste-skill
+.markdown-collab
+.impeccable
+**/hook.cache.json
+
+# Vercel
+.vercel/
+
+# IDEs and Editors
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# System and OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Temporary and backup files
+*.tmp
+*.temp
+*~
+*.bak

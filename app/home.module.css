@@ -1,0 +1,48 @@
+.section { margin-top: var(--section); }
+.head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr);
+  align-items: end;
+  gap: 16px 40px;
+  margin-bottom: clamp(28px, 4vw, 56px);
+}
+.head h2 { font-size: var(--f-h2); max-width: 14ch; }
+.head p { color: var(--ink-2); max-width: 46ch; justify-self: end; }
+
+.more { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; margin-top: 28px; }
+.note { font-size: var(--f-small); color: var(--ink-3); }
+
+/* the wholesale strip: the pitch on one side, the request it produces on the other */
+.wholesale {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+  align-items: center;
+  gap: clamp(28px, 5vw, 80px);
+  padding: clamp(28px, 5vw, 72px);
+  border-radius: var(--r-xl);
+  background: radial-gradient(90% 120% at 100% 0%, var(--s3), var(--s1) 62%);
+}
+.wholesaleCopy { display: grid; gap: 20px; justify-items: start; }
+.wholesaleCopy h2 { font-size: var(--f-h2); max-width: 12ch; }
+.wholesaleCopy p { color: var(--ink-2); max-width: 44ch; }
+/* WhatsApp's dark chat colours, so the sample reads as the message that will be sent */
+.chat { display: grid; padding: 22px; border-radius: var(--r-lg); background: #0b141a; box-shadow: var(--ring); }
+.msg {
+  justify-self: end;
+  max-width: 360px;
+  padding: 10px 12px 10px 14px;
+  border-radius: 12px 2px 12px 12px;
+  background: #005c4b;
+  color: #e9edef;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.faq { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 40px; align-items: start; }
+.faq h2 { font-size: var(--f-h2); max-width: 11ch; }
+
+@media (max-width: 860px) {
+  .head, .wholesale { grid-template-columns: minmax(0, 1fr); }
+  .head p { justify-self: start; }
+  .faq { grid-template-columns: minmax(0, 1fr); }
+}

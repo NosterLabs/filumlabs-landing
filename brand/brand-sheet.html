@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FilumLabs · Marca</title>
+<link rel="icon" href="logo/favicon-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0D1115; --slate: #26333D; --fog: #4D6576; --mist: #B9C7D2; --paper: #E6EAEE; --white: #FFFFFF;
+    --text: #EEF2F5; --muted: rgba(238, 242, 245, .58); --edge: rgba(255, 255, 255, .16);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--ink); color: var(--text); font-family: 'Urbanist', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .fog { position: fixed; inset: 0; z-index: -1; overflow: hidden; }
+  .fog i { position: absolute; border-radius: 50%; filter: blur(90px); }
+  .fog i:nth-child(1) { width: 70vw; height: 70vw; left: -15vw; top: -25vw; background: var(--fog); opacity: .55; }
+  .fog i:nth-child(2) { width: 40vw; height: 60vw; left: 40vw; top: 25vh; background: #000; opacity: .45; }
+  .fog i:nth-child(3) { width: 50vw; height: 50vw; right: -20vw; bottom: -20vw; background: var(--slate); opacity: .8; }
+  .grain { position: fixed; inset: 0; pointer-events: none; opacity: .07; z-index: 50;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  .glass {
+    background: linear-gradient(140deg, rgba(255,255,255,.16), rgba(255,255,255,.06) 45%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%); backdrop-filter: blur(24px) saturate(150%);
+    border: 1px solid var(--edge); box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 24px 60px rgba(0,0,0,.38);
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+  .mono { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  section { padding: 56px 0 0; }
+  section > .mono { margin-bottom: 18px; }
+  .grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  .tile { border-radius: 28px; padding: 28px; min-height: 260px; display: grid; place-items: center; position: relative; }
+  .tile .mono { position: absolute; left: 24px; bottom: 20px; }
+  .lockup { display: flex; align-items: center; gap: clamp(14px, 2.5vw, 28px); }
+  .lockup svg { width: clamp(56px, 9vw, 112px); aspect-ratio: 1; height: auto; flex: none; }
+  .word { font-size: clamp(48px, 9vw, 104px); letter-spacing: -.02em; line-height: .8; }
+  .word b { font-weight: 600; } .word span { font-weight: 300; opacity: .7; }
+  .by { display: flex; align-items: center; gap: .5em; font-family: 'IBM Plex Mono', monospace; font-size: clamp(9px, 1.4vw, 15px); letter-spacing: .22em; text-transform: uppercase; opacity: .7; margin-top: clamp(10px, 1.6vw, 16px); }
+  .by svg { height: 1.4em; width: auto; aspect-ratio: 394 / 62; }
+  .hero { border-radius: 36px; padding: clamp(48px, 10vw, 120px) 24px; display: grid; place-items: center; margin-top: 64px; }
+  .light { background: var(--paper); color: var(--ink); border: 1px solid #fff; }
+  .light .mono { color: rgba(13, 17, 21, .72); }
+  .sw .mono { color: inherit; opacity: .85; }
+  .sym { width: 45%; max-width: 160px; }
+  .icon { width: 132px; height: 132px; border-radius: 30px; display: grid; place-items: center; color: #fff;
+    background: radial-gradient(120% 120% at 20% 0%, #3a4b58 0%, #161d23 55%, #0d1115 100%); box-shadow: 0 18px 40px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.18); }
+  .icon svg { width: 82%; }
+  .sizes { display: flex; align-items: end; gap: 24px; }
+  .clear { width: 180px; aspect-ratio: 1; outline: 1px dashed var(--muted); outline-offset: 0; display: grid; place-items: center; position: relative; }
+  .clear::before { content: ''; position: absolute; inset: 24%; outline: 1px solid var(--edge); }
+  .swatches { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .sw { border-radius: 20px; padding: 16px; min-height: 120px; display: flex; flex-direction: column; justify-content: end; gap: 4px; border: 1px solid var(--edge); }
+  .sw b { font-weight: 500; font-size: 16px; }
+  .type p + p { margin-top: 10px; }
+  .t1 { font-size: clamp(36px, 6vw, 64px); font-weight: 300; letter-spacing: -.03em; line-height: 1; }
+  .t2 { font-size: 17px; line-height: 1.6; color: var(--muted); max-width: 56ch; }
+  footer { padding: 72px 0 48px; }
+  .shots { columns: 2 420px; column-gap: 20px; }
+  .shots figure { break-inside: avoid; margin: 0 0 20px; }
+  .shots img { display: block; width: 100%; height: auto; border-radius: 24px; border: 1px solid var(--edge); }
+  .shots figcaption { margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="fog" aria-hidden="true"><i></i><i></i><i></i></div>
+<div class="grain" aria-hidden="true"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="fl" viewBox="0 0 100 100"><g fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M28 64V28h32"/><path d="M32 46h12"/><path d="M72 38v34H44"/></g></symbol>
+  <symbol id="fl-tight" viewBox="22 22 56 56"><g fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M28 64V28h32"/><path d="M32 46h12"/><path d="M72 38v34H44"/></g></symbol>
+  <!-- same artwork as logo/nosterlabs-mono.svg -->
+  <symbol id="nl" viewBox="8 -0.5 394 62"><g transform="translate(-2.1435 8.7666)">
+    <g transform="matrix(0.00796523,0,0,-0.00796523,-9.2372006,71.021257)" fill="currentColor">
+    <path d="m 9014,10009 c -213,-27 -439,-158 -579,-334 -404,-509 -121,-1248 520,-1360 678,-118 1237,529 996,1151 -146,374 -529,597 -937,543 z"/>
+    <path d="m 8260,6853 c 0,-1414 1,-1459 20,-1500 21,-47 1416,-1466 1435,-1460 7,3 10,464 10,1443 v 1439 l -23,85 c -38,145 -103,260 -214,382 -49,54 -1207,1068 -1220,1068 -4,0 -8,-656 -8,-1457 z"/>
+    <path d="m 3210,9673 c -315,-52 -559,-250 -658,-532 -37,-107 -39,-291 -4,-396 50,-150 83,-193 402,-528 194,-203 691,-732 1040,-1107 437,-468 549,-589 913,-978 192,-205 416,-445 500,-535 343,-368 866,-928 1087,-1162 130,-137 530,-563 889,-945 701,-745 696,-740 816,-821 351,-235 812,-247 1142,-29 323,213 468,571 343,847 -28,62 -77,112 -834,867 -808,805 -941,941 -2216,2281 -1027,1079 -2085,2185 -2475,2588 -263,273 -344,338 -493,396 -130,50 -332,74 -452,54 z"/>
+    <path d="m 2492,5703 c 3,-2383 4,-2511 21,-2568 76,-254 264,-446 512,-522 101,-31 307,-26 410,10 195,68 340,200 431,390 67,143 64,27 63,1982 v 1770 l -711,720 c -392,396 -716,722 -720,723 -5,2 -7,-1125 -6,-2505 z"/></g>
+    <g fill="currentColor"><path d="m 93.627874,51.167138 q -5.444144,0 -9.826016,-2.32372 -4.31548,-2.32372 -6.838375,-6.6392 -2.456504,-4.31548 -2.456504,-10.091584 0,-5.709712 2.522896,-10.025192 2.522895,-4.381872 6.904767,-6.705592 4.381872,-2.323719 9.826016,-2.323719 5.444144,0 9.826012,2.323719 4.38188,2.32372 6.90477,6.705592 2.5229,4.31548 2.5229,10.025192 0,5.709712 -2.58929,10.091584 -2.5229,4.31548 -6.97116,6.6392 -4.381872,2.32372 -9.826016,2.32372 z m 0,-9.826016 q 3.253208,0 5.510536,-2.390112 2.32372,-2.390112 2.32372,-6.838376 0,-4.448264 -2.257328,-6.838376 -2.190936,-2.390112 -5.444144,-2.390112 -3.3196,0 -5.510536,2.390112 -2.190936,2.32372 -2.190936,6.838376 0,4.448264 2.124544,6.838376 2.190936,2.390112 5.444144,2.390112 z m 40.499066,9.826016 q -4.84662,0 -8.63096,-1.6598 -3.78435,-1.6598 -5.97528,-4.514656 -2.19094,-2.921248 -2.45651,-6.506416 h 11.22025 q 0.19918,1.925368 1.79258,3.120424 1.59341,1.195056 3.91713,1.195056 2.12455,0 3.25321,-0.796704 1.19506,-0.863096 1.19506,-2.190936 0,-1.593408 -1.6598,-2.32372 -1.6598,-0.796704 -5.37776,-1.726192 -3.98352,-0.929488 -6.6392,-1.925368 -2.65568,-1.062272 -4.58104,-3.253208 -1.92537,-2.257328 -1.92537,-6.041672 0,-3.186816 1.72619,-5.776104 1.79258,-2.65568 5.17858,-4.182695 3.45238,-1.527016 8.16621,-1.527016 6.97116,0 10.95468,3.452383 4.04991,3.452384 4.64744,9.162096 h -10.48993 q -0.26557,-1.925368 -1.7262,-3.054032 -1.39423,-1.128664 -3.71795,-1.128664 -1.99176,0 -3.05403,0.796704 -1.06227,0.730312 -1.06227,2.058152 0,1.593408 1.6598,2.390112 1.72619,0.796704 5.31136,1.593408 4.1163,1.062272 6.70559,2.124544 2.58929,0.99588 4.51465,3.3196 1.99176,2.257328 2.05816,6.108064 0,3.253208 -1.85898,5.842496 -1.79258,2.522896 -5.24497,3.98352 -3.38599,1.460624 -7.90064,1.460624 z m 42.6237,-10.157976 v 9.62684 h -5.77611 q -6.17445,0 -9.62684,-2.98764 -3.45238,-3.054032 -3.45238,-9.892408 V 23.01693 h -4.51466 v -9.427663 h 4.51466 V 4.5599548 h 11.35303 v 9.0293122 h 7.4359 v 9.427663 h -7.4359 v 14.871808 q 0,1.6598 0.7967,2.390112 0.79671,0.730312 2.65568,0.730312 z m 41.22944,-9.494056 q 0,1.593408 -0.19918,3.3196 h -25.6937 q 0.26557,3.452384 2.19093,5.31136 1.99176,1.792584 4.84662,1.792584 4.24909,0 5.90889,-3.585168 h 12.08334 q -0.92949,3.65156 -3.38599,6.572808 -2.39011,2.921248 -6.04167,4.581048 -3.65156,1.6598 -8.16622,1.6598 -5.44414,0 -9.69323,-2.32372 -4.24909,-2.32372 -6.6392,-6.6392 -2.39011,-4.31548 -2.39011,-10.091584 0,-5.776104 2.32372,-10.091584 2.39011,-4.31548 6.6392,-6.6392 4.24909,-2.323719 9.75962,-2.323719 5.37775,0 9.56045,2.257327 4.18269,2.257328 6.50641,6.440024 2.39012,4.182696 2.39012,9.759624 z m -11.6186,-2.98764 q 0,-2.921248 -1.99176,-4.64744 -1.99176,-1.726192 -4.9794,-1.726192 -2.85486,0 -4.84662,1.6598 -1.92537,1.6598 -2.39011,4.713832 z m 28.94685,-8.763744 q 1.99176,-3.054032 4.9794,-4.780223 2.98764,-1.792584 6.6392,-1.792584 v 12.016951 h -3.12042 q -4.24909,0 -6.37363,1.858976 -2.12455,1.792584 -2.12455,6.373632 V 50.636002 H 223.9553 V 13.589267 h 11.35303 z"/><path d="m 260.80283,44.527938 h 15.60212 v 6.108064 H 253.23414 V 4.4935628 h 7.56869 z m 19.38648,-12.348912 q 0,-5.510536 2.25733,-9.759624 2.32372,-4.249088 6.24085,-6.572808 3.98352,-2.390111 8.76374,-2.390111 4.31548,0 7.5023,1.726191 3.25321,1.6598 5.17858,4.182696 v -5.311359 h 7.63508 v 36.581991 h -7.63508 v -5.444144 q -1.92537,2.589288 -5.24497,4.31548 -3.3196,1.726192 -7.56869,1.726192 -4.71383,0 -8.63096,-2.390112 -3.91713,-2.456504 -6.24085,-6.771984 -2.25733,-4.381872 -2.25733,-9.892408 z m 29.9428,0.132784 q 0,-3.784344 -1.59341,-6.572808 -1.52702,-2.788464 -4.04991,-4.249088 -2.5229,-1.460624 -5.44415,-1.460624 -2.92125,0 -5.44414,1.460624 -2.5229,1.394232 -4.11631,4.182696 -1.52701,2.722072 -1.52701,6.506416 0,3.784344 1.52701,6.6392 1.59341,2.854856 4.11631,4.381872 2.58929,1.460624 5.44414,1.460624 2.92125,0 5.44415,-1.460624 2.52289,-1.460624 4.04991,-4.249088 1.59341,-2.854856 1.59341,-6.6392 z m 25.16252,-12.813656 q 1.92537,-2.65568 5.24497,-4.31548 3.38599,-1.726191 7.5023,-1.726191 4.84661,0 8.76374,2.323719 3.91713,2.32372 6.17445,6.6392 2.25733,4.249088 2.25733,9.759624 0,5.510536 -2.25733,9.892408 -2.25732,4.31548 -6.24084,6.771984 -3.91713,2.390112 -8.69735,2.390112 -4.24909,0 -7.56869,-1.6598 -3.25321,-1.6598 -5.17858,-4.249088 v 5.31136 h -7.56869 V 1.5059229 h 7.56869 z m 22.24132,12.680872 q 0,-3.784344 -1.59341,-6.506416 -1.52701,-2.788464 -4.1163,-4.182696 -2.5229,-1.460624 -5.44414,-1.460624 -2.85486,0 -5.44415,1.460624 -2.52289,1.460624 -4.1163,4.249088 -1.52702,2.788464 -1.52702,6.572808 0,3.784344 1.52702,6.6392 1.59341,2.788464 4.1163,4.249088 2.58929,1.460624 5.44415,1.460624 2.92124,0 5.44414,-1.460624 2.58929,-1.527016 4.1163,-4.381872 1.59341,-2.854856 1.59341,-6.6392 z m 28.48213,19.054504 q -4.31548,0 -7.76787,-1.527016 -3.38599,-1.593408 -5.37775,-4.249088 -1.99176,-2.722072 -2.12454,-6.041672 h 7.83425 q 0.19918,2.32372 2.19094,3.917128 2.05815,1.527016 5.11218,1.527016 3.18682,0 4.91301,-1.195056 1.79258,-1.261448 1.79258,-3.186816 0,-2.058152 -1.99176,-3.054032 -1.92536,-0.99588 -6.17445,-2.190936 -4.11631,-1.128664 -6.70559,-2.190936 -2.58929,-1.062272 -4.51466,-3.253208 -1.85898,-2.190936 -1.85898,-5.776104 0,-2.921248 1.7262,-5.31136 1.72619,-2.456504 4.913,-3.850735 3.25321,-1.394232 7.43591,-1.394232 6.24085,0 10.02519,3.186815 3.85074,3.120424 4.1163,8.564568 h -7.56868 q -0.19918,-2.456504 -1.99176,-3.917128 -1.79259,-1.460624 -4.84662,-1.460624 -2.98764,0 -4.58105,1.128664 -1.59341,1.128664 -1.59341,2.98764 0,1.460624 1.06228,2.456504 1.06227,0.99588 2.58928,1.593408 1.52702,0.531136 4.51466,1.394232 3.98352,1.062272 6.50642,2.190936 2.58928,1.062272 4.44826,3.186816 1.85898,2.124544 1.92537,5.64332 0,3.120424 -1.72619,5.576928 -1.7262,2.456504 -4.91301,3.850736 -3.12043,1.394232 -7.36951,1.394232 z" fill-opacity=".7"/></g></g></symbol>
+</svg>
+
+<div class="wrap">
+  <div class="hero glass">
+    <div class="lockup"><svg aria-hidden="true"><use href="#fl-tight"/></svg>
+      <div><div class="word"><b>Filum</b><span>Labs</span></div><span class="by">by <svg aria-label="NosterLabs"><use href="#nl"/></svg></span></div></div>
+  </div>
+
+  <section>
+    <p class="mono">Isotipo · Encastre F</p>
+    <div class="grid">
+      <div class="tile glass"><svg class="sym" aria-label="Isotipo FilumLabs"><use href="#fl"/></svg><span class="mono">Sobre vidrio</span></div>
+      <div class="tile light"><svg class="sym" aria-label="Isotipo FilumLabs"><use href="#fl"/></svg><span class="mono">Sobre claro</span></div>
+      <div class="tile glass"><div class="icon"><svg aria-label="Ícono de app"><use href="#fl"/></svg></div><span class="mono">Ícono de app</span></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="mono">Escala y área de respeto</p>
+    <div class="grid">
+      <div class="tile glass">
+        <div class="sizes">
+          <svg width="16" height="16"><use href="#fl-tight"/></svg><svg width="24" height="24"><use href="#fl-tight"/></svg>
+          <svg width="32" height="32"><use href="#fl-tight"/></svg><svg width="48" height="48"><use href="#fl-tight"/></svg>
+          <svg width="96" height="96"><use href="#fl-tight"/></svg>
+        </div><span class="mono">16 · 24 · 32 · 48 · 96 px</span>
+      </div>
+      <div class="tile glass"><div class="clear"><svg width="100%" height="100%"><use href="#fl"/></svg></div>
+        <span class="mono">Margen mínimo = ancho del trazo × 3</span></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="mono">Paleta · monocromo + vidrio</p>
+    <div class="swatches">
+      <div class="sw" style="background:#0D1115"><b>Ink</b><span class="mono">#0D1115</span></div>
+      <div class="sw" style="background:#26333D"><b>Slate</b><span class="mono">#26333D</span></div>
+      <div class="sw" style="background:#4D6576"><b>Fog</b><span class="mono">#4D6576</span></div>
+      <div class="sw" style="background:#B9C7D2;color:#0D1115"><b>Mist</b><span class="mono">#B9C7D2</span></div>
+      <div class="sw" style="background:#E6EAEE;color:#0D1115"><b>Paper</b><span class="mono">#E6EAEE</span></div>
+      <div class="sw glass"><b>Glass</b><span class="mono">blanco 6–16% · blur 24</span></div>
+    </div>
+  </section>
+
+  <section class="type">
+    <p class="mono">Tipografía</p>
+    <p class="t1">Urbanist: piezas a medida, cotizadas al instante.</p>
+    <p class="t2">Urbanist para títulos y texto: geométrica, liviana y con aire premium. IBM Plex Mono para datos técnicos como medidas, gramos, tiempos de impresión y precios por unidad.</p>
+  </section>
+
+  <section>
+    <p class="mono">Aplicaciones</p>
+    <div class="shots">
+      <figure><img src="showcase/04-glass-container.jpeg" alt="Isotipo dentro de una placa de vidrio refractivo sobre fondo gris azulado desenfocado" loading="lazy"><figcaption class="mono">Liquid glass</figcaption></figure>
+      <figure><img src="showcase/01-frosted.jpeg" alt="Isotipo blanco sobre fondo pizarra con halo frío" loading="lazy"><figcaption class="mono">Frosted horizon</figcaption></figure>
+      <figure><img src="showcase/05-printed-object.jpeg" alt="Isotipo impreso en PLA negro con líneas de capa sobre vidrio esmerilado" loading="lazy"><figcaption class="mono">Pieza impresa</figcaption></figure>
+      <figure><img src="showcase/02-spotlight.jpeg" alt="Isotipo blanco bajo un foco sobre fondo carbón" loading="lazy"><figcaption class="mono">Studio spotlight</figcaption></figure>
+      <figure><img src="showcase/03-iridescent.jpeg" alt="Isotipo negro sobre fondo plateado con brillo iridiscente" loading="lazy"><figcaption class="mono">Iridescent frost</figcaption></figure>
+      <figure><img src="showcase/06-packaging.jpeg" alt="Caja negra con el logo en foil blanco y una pieza impresa al lado" loading="lazy"><figcaption class="mono">Packaging · borrador</figcaption></figure>
+    </div>
+  </section>
+
+  <footer><p class="mono">FilumLabs by NosterLabs · Hoja de marca v1 · Octubre 2026</p></footer>
+</div>
+</body>
+</html>

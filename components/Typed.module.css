@@ -1,0 +1,4 @@
+.typed { display: grid; white-space: pre-line; }
+.typed > [aria-hidden] { grid-area: 1 / 1; }
+.ghost { visibility: hidden; }
+.caret { display: inline-block; width: 2px; height: 1em; margin-left: 1px; vertical-align: -0.12em; background: currentColor; }

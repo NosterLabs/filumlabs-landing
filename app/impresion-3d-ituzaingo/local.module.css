@@ -1,0 +1,27 @@
+.actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.section { margin-top: clamp(64px, 9vw, 128px); }
+.section h2 { font-size: var(--f-h2); max-width: 14ch; }
+.section p { color: var(--ink-2); max-width: 52ch; margin-top: 16px; }
+.split { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 24px 56px; align-items: start; }
+
+.steps { list-style: none; padding: 0; margin-top: 32px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.steps li { display: grid; gap: 12px; align-content: start; padding: 28px; border-radius: var(--r-lg); background: var(--s1); box-shadow: var(--ring); }
+.steps span { font-size: 13px; letter-spacing: 0.08em; color: var(--ink-3); }
+.steps h3 { font-size: var(--f-h3); }
+.steps p { margin-top: 0; }
+
+.areas, .uses { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; }
+.areas li { padding: 10px 18px; border-radius: 999px; background: rgba(238, 242, 245, 0.06); box-shadow: var(--ring); }
+.uses { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; }
+.uses li { padding: 14px 0; border-bottom: 1px solid var(--line); color: var(--ink-2); }
+
+.faq { display: grid; }
+.faq div { padding: 20px 0; border-bottom: 1px solid var(--line); }
+.faq div:first-child { border-top: 1px solid var(--line); }
+.faq dt { font-size: 19px; font-weight: 500; letter-spacing: -0.02em; }
+.faq dd { margin: 8px 0 0; color: var(--ink-2); max-width: 60ch; }
+
+@media (max-width: 860px) {
+  .split, .steps { grid-template-columns: minmax(0, 1fr); }
+  .uses { grid-template-columns: minmax(0, 1fr); }
+}

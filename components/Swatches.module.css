@@ -1,0 +1,80 @@
+/* the field: looks like the other selects, shows the chosen spool */
+.trigger {
+  anchor-name: var(--anchor);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 46px;
+  padding: 0 12px 0 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--s2);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease-out;
+}
+.trigger:hover { border-color: rgba(238, 242, 245, 0.24); }
+.trigger:disabled { cursor: default; }
+.trigger small { margin-left: auto; font-size: var(--f-small); color: var(--ink-3); }
+.trigger svg { width: 18px; height: 18px; flex: none; color: var(--ink-3); transition: rotate 0.2s ease-out; }
+.picker:has(:popover-open) .trigger svg { rotate: 180deg; }
+.dot { flex: none; width: 26px; height: 26px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px rgba(238, 242, 245, 0.22); }
+
+/* the panel: without anchor positioning the browser centres it on screen, which still works */
+.panel {
+  width: min(400px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  padding: 14px 12px 16px;
+  border: 0;
+  border-radius: var(--r-lg);
+  background: var(--s2);
+  box-shadow: var(--ring), 0 24px 60px -12px rgba(0, 0, 0, 0.7);
+  color: var(--ink);
+  transition: opacity 0.15s ease-out, translate 0.15s ease-out, overlay 0.15s allow-discrete, display 0.15s allow-discrete;
+}
+.panel:not(:popover-open) { opacity: 0; translate: 0 -4px; }
+@starting-style {
+  .panel:popover-open { opacity: 0; translate: 0 -4px; }
+}
+@supports (position-area: block-end) {
+  .panel {
+    position-anchor: var(--anchor);
+    position-area: block-end span-inline-end;
+    position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+    inset: auto;
+    margin: 8px 0;
+    max-height: none;
+  }
+}
+/* phones and short screens: no room beside the field, the panel opens centred over a dimmed page */
+@media (max-width: 520px), (max-height: 760px) {
+  .panel { position-area: none; inset: 0; margin: auto; }
+  .panel::backdrop { background: rgba(5, 8, 10, 0.55); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel { transition: none; }
+}
+
+.name { margin: 0 4px 12px; font-size: var(--f-small); color: var(--ink-2); }
+/* small lines share a row: Traslúcidos and Fluo UV side by side */
+.lines { display: flex; flex-wrap: wrap; gap: 14px 24px; }
+.line { display: grid; gap: 8px; max-width: 100%; padding: 0 4px; }
+.line span { font-size: 13px; color: var(--ink-3); }
+.line div { display: flex; flex-wrap: wrap; gap: 8px; }
+.line button {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid rgba(238, 242, 245, 0.22);
+  cursor: pointer;
+  transition: transform 0.15s ease-out;
+}
+/* 40px hit area around the 32px swatch: the 8px gap keeps neighbours from overlapping */
+.line button::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; }
+.line button:hover { transform: scale(1.08); }
+.line button:active { transform: var(--press); }
+.line button[aria-checked='true'] { outline: 2px solid var(--paper); outline-offset: 3px; }

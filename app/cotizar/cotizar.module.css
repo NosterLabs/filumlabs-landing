@@ -1,0 +1,209 @@
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 420px);
+  gap: 14px;
+  padding: 14px var(--gutter) var(--gutter);
+  min-height: calc(100dvh - var(--nav-h));
+}
+
+/* the studio: one soft key light from above on the dark plate, so the part reads as an object */
+.stage {
+  position: relative;
+  min-height: 560px;
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  background: radial-gradient(90% 80% at 50% 18%, #26313a 0%, #161d23 55%, #0f1418 100%);
+  transition: box-shadow 0.3s;
+}
+.stage[data-drag] { box-shadow: inset 0 0 0 2px var(--hot); }
+.stage > :first-child { position: absolute; inset: 0; }
+
+.empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 14px;
+  padding: 24px;
+  text-align: center;
+  pointer-events: none;
+  color: var(--ink-2);
+}
+.empty > * { pointer-events: auto; }
+.emptyTitle { font-size: var(--f-h2); font-weight: 500; letter-spacing: -0.04em; line-height: 1; color: var(--ink); }
+.samples { color: var(--ink-2); }
+
+/* loading: five layers stacking, the identity motif in motion */
+.loader { display: grid; gap: 4px; width: 64px; }
+.loader i { height: 6px; border-radius: 3px; background: var(--ink); transform-origin: left; animation: layer 1.4s var(--ease-io) infinite; }
+.loader i:nth-child(1) { animation-delay: 0.6s; }
+.loader i:nth-child(2) { animation-delay: 0.45s; }
+.loader i:nth-child(3) { animation-delay: 0.3s; }
+.loader i:nth-child(4) { animation-delay: 0.15s; }
+@keyframes layer {
+  0%, 100% { transform: scaleX(0.2); opacity: 0.35; }
+  50% { transform: scaleX(1); opacity: 1; }
+}
+
+.error {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 16px;
+  display: grid;
+  gap: 6px;
+  padding: 14px 18px;
+  border-radius: calc(var(--r-xl) - 16px); /* concentric with the stage: 32 - 16 */
+  background: rgba(255, 138, 138, 0.12);
+  color: var(--danger);
+}
+
+.readout {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 10px;
+  pointer-events: none;
+}
+/* the tiles sit 14px inside the 32px stage, so their corners are 18px, concentric */
+.readout > :global(.glass) { border-radius: calc(var(--r-xl) - 14px); }
+
+/* plate picker for Bambu Studio projects: one plate on the bed at a time, like the slicer */
+.plates {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  max-width: calc(100% - 228px); /* wraps before it reaches the Centrar button */
+  padding: 4px 4px 4px 14px;
+  border-radius: calc(var(--r-xl) - 14px);
+  background: rgba(13, 17, 21, 0.72);
+  box-shadow: var(--ring);
+  font-size: var(--f-small);
+  color: var(--ink-2);
+}
+.plates span { margin-right: 6px; }
+.plates button {
+  min-width: 44px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 14px;
+  background: none;
+  color: var(--ink-2);
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  transition: background-color 0.15s ease-out, color 0.15s ease-out, transform 0.15s ease-out;
+}
+.plates button:hover { color: var(--ink); background: rgba(238, 242, 245, 0.08); }
+.plates button:active { transform: var(--press); }
+.plates button[aria-pressed='true'] { background: var(--paper); color: var(--bg); }
+.plates button[data-warn] { box-shadow: inset 0 0 0 1px var(--danger); }
+/* a plate left out of the order stays visible, struck through, so it can come back */
+.plates button[data-off] { text-decoration: line-through; color: var(--ink-3); }
+.plates button[data-off][aria-pressed='true'] { background: var(--s3); color: var(--ink-2); }
+.plates .plateToggle { min-width: 0; margin-left: 4px; padding: 0 14px; box-shadow: inset 1px 0 0 rgba(238, 242, 245, 0.12); border-radius: 0 14px 14px 0; color: var(--ink); }
+.plates .plateToggle:disabled { color: var(--ink-3); cursor: default; }
+
+.panel {
+  align-self: start;
+  position: sticky;
+  top: calc(var(--nav-h) + 14px);
+  max-height: calc(100dvh - var(--nav-h) - 28px);
+  overflow-y: auto;
+  padding: 24px;
+  border-radius: var(--r-xl);
+  background: var(--s1);
+  box-shadow: var(--ring);
+  display: grid;
+  gap: 22px;
+  font-variant-numeric: tabular-nums;
+}
+.panelHead { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+.title { font-size: 30px; line-height: 1.05; overflow-wrap: anywhere; }
+.lede { color: var(--ink-2); margin-top: -10px; }
+.group { border: 0; padding: 0; display: grid; gap: 10px; min-width: 0; }
+.group:disabled { opacity: 0.45; }
+.group legend { font-weight: 600; margin-bottom: 10px; padding: 0; }
+.select {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--s2);
+}
+.select option { background: var(--s1); }
+.inline { display: flex; align-items: center; gap: 12px; }
+.inline input[type='range'] { flex: 1; accent-color: var(--paper); min-height: 44px; }
+.numberField { display: inline-flex; align-items: center; gap: 4px; }
+.numberField input {
+  width: 76px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--s2);
+  text-align: right;
+}
+.rangeLabel { width: 64px; }
+.rangeValue { width: 46px; text-align: right; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips button,
+.segmented button {
+  min-height: 44px;
+  padding: 0 15px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--s2);
+  box-shadow: var(--ring);
+  cursor: pointer;
+  font-size: 15px;
+  transition: background-color 0.15s ease-out, box-shadow 0.15s ease-out, transform 0.15s ease-out;
+}
+.chips button:hover,
+.segmented button:hover { background: var(--s3); box-shadow: var(--ring-hover); }
+.chips button:active,
+.segmented button:active { transform: var(--press); }
+.chips button[aria-checked='true'],
+.segmented button[aria-checked='true'] { background: var(--paper); box-shadow: none; color: var(--bg); }
+.segmented { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.note { font-size: var(--f-small); color: var(--ink-3); }
+.warn { font-size: var(--f-small); color: var(--danger); }
+
+/* price stays in view at the foot of the scrolling panel */
+.price {
+  position: sticky;
+  bottom: -24px;
+  display: grid;
+  gap: 12px;
+  margin: 0 -24px -24px;
+  padding: 18px 24px 24px;
+  border-top: 1px solid var(--line);
+  background: var(--s1);
+}
+.priceRow { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.total { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+
+@media (max-width: 960px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .stage { min-height: 0; display: grid; grid-template-rows: auto auto; }
+  .stage > :first-child { position: relative; inset: auto; height: 56svh; min-height: 320px; }
+  .readout { position: static; margin: 0 12px 12px; grid-template-columns: 1fr 1fr; }
+  /* three figures and two separators do not fit half a phone: the size tile takes the full row */
+  .readout > :first-child,
+  .readout > :last-child { grid-column: 1 / -1; }
+  .readout > :global(.glass) { border-radius: calc(var(--r-xl) - 12px); }
+  /* the readouts leave the stage on phones, so Centrar takes the free bottom corner */
+  .stage [data-view-tools] { top: auto; bottom: 12px; right: 12px; }
+  .plates { max-width: calc(100% - 28px); }
+  .panel { position: static; max-height: none; }
+  .price { position: static; margin: 0 -24px -24px; }
+  .title { font-size: 24px; }
+}

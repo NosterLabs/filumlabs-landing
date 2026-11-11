@@ -1,0 +1,4 @@
+.roll { display: inline-flex; white-space: pre; }
+.col { display: inline-block; height: 1lh; overflow: hidden; }
+.col > span { display: flex; flex-direction: column; transition: transform 0.5s var(--ease); }
+.col > span > span { height: 1lh; }

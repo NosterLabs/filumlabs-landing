@@ -1,0 +1,116 @@
+.layout { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: clamp(20px, 3.5vw, 56px); align-items: start; }
+.form { display: grid; gap: 20px; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+.field { display: grid; gap: 8px; align-content: start; }
+.field > label, .field > span { font-size: var(--f-small); color: var(--ink-2); }
+.field input, .field select, .field textarea {
+  width: 100%;
+  min-height: 50px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--s2);
+  transition: border-color 0.15s ease-out;
+}
+.field textarea { resize: vertical; min-height: 96px; }
+.field input:hover, .field select:hover, .field textarea:hover { border-color: rgba(238, 242, 245, 0.24); }
+.field ::placeholder { color: var(--ink-3); }
+.field select option { background: var(--s1); }
+.field :global(.qty) { justify-self: start; }
+.field :global(.qty) input { min-height: 44px; width: 64px; padding: 0; border: 0; background: none; }
+
+/* the first choice decides the rest of the form: two cards, not a mixed dropdown */
+.kind { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.kind button {
+  display: grid;
+  gap: 2px;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: var(--r-md);
+  background: var(--s2);
+  box-shadow: var(--ring);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease-out, box-shadow 0.15s ease-out, transform 0.15s ease-out;
+}
+.kind button:hover { box-shadow: var(--ring-hover); }
+.kind button:active { transform: var(--press); }
+.kind b { font-weight: 600; }
+.kind span { font-size: var(--f-small); color: var(--ink-3); }
+.kind button[aria-checked='true'] { background: var(--paper); box-shadow: none; color: var(--bg); }
+.kind button[aria-checked='true'] span { color: #46525c; }
+
+.options { display: flex; flex-wrap: wrap; gap: 8px; }
+.options button {
+  min-width: 52px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--s2);
+  box-shadow: var(--ring);
+  cursor: pointer;
+  transition: background-color 0.15s ease-out, box-shadow 0.15s ease-out, transform 0.15s ease-out;
+}
+.options button:hover { box-shadow: var(--ring-hover); }
+.options button:active { transform: var(--press); }
+.options button[aria-checked='true'] { background: var(--paper); box-shadow: none; color: var(--bg); }
+
+/* ---------- WhatsApp chat preview: dark WhatsApp colours, so it reads as the chat that will open ---------- */
+.side { position: sticky; top: calc(var(--nav-h) + 24px); display: grid; gap: 14px; }
+.sideLabel { font-size: var(--f-small); color: var(--ink-2); }
+.chat { margin: 0; border-radius: var(--r-lg); overflow: hidden; background: #0b141a; box-shadow: var(--ring); }
+.chatHead { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #202c33; }
+.avatar { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--paper); color: var(--bg); }
+.avatar svg { width: 20px; height: 20px; }
+.contact { display: grid; line-height: 1.25; }
+.contact b { font-weight: 600; color: #e9edef; }
+.contact small { font-size: 13px; color: #8696a0; }
+.chatBody { display: grid; gap: 10px; padding: 16px 16px 22px; min-height: 260px; align-content: start; }
+.day { justify-self: center; padding: 4px 12px; border-radius: 8px; background: #182229; font-size: 12px; color: #8696a0; }
+/* outgoing bubble with its tail on the top right, like a sent WhatsApp message */
+.msg {
+  position: relative;
+  justify-self: end;
+  width: min(100%, 400px);
+  padding: 8px 10px 6px 12px;
+  border-radius: 10px 0 10px 10px;
+  background: #005c4b;
+  color: #e9edef;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.msg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -8px;
+  border-top: 10px solid #005c4b;
+  border-right: 8px solid transparent;
+}
+.msg p { overflow-wrap: anywhere; }
+.meta { display: flex; justify-content: flex-end; align-items: center; gap: 4px; margin-top: 2px; font-size: 11px; color: #b9d1cb; }
+.meta svg { width: 16px; height: 11px; color: #53bdeb; }
+.attach {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(100%, 400px);
+  padding: 12px 14px;
+  border: 1.5px dashed rgba(233, 237, 239, 0.28);
+  border-radius: 10px;
+  font-size: var(--f-small);
+  color: #e9edef;
+}
+.attach svg { flex: none; width: 20px; height: 20px; color: #8696a0; }
+
+.list { font-size: var(--f-small); color: var(--ink-2); }
+
+@media (max-width: 860px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .side { position: static; }
+}
+@media (max-width: 520px) {
+  .row, .kind { grid-template-columns: 1fr; }
+}

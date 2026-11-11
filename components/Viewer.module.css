@@ -1,0 +1,41 @@
+.viewer { position: relative; width: 100%; height: 100%; min-height: 280px; }
+.canvas { position: absolute; inset: 0; touch-action: none; cursor: grab; }
+.canvas:active { cursor: grabbing; }
+.canvas canvas { width: 100% !important; height: 100% !important; }
+.poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  transition: opacity 0.6s var(--ease);
+}
+.poster[data-hide] { opacity: 0; }
+.note { position: absolute; left: 16px; right: 16px; top: 16px; font-size: var(--f-small); color: var(--ink-2); }
+
+.tools { position: absolute; top: 14px; right: 14px; display: grid; justify-items: end; gap: 6px; font-size: var(--f-small); }
+.hint { color: var(--ink-3); }
+.tools button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px 0 13px;
+  border: 0;
+  border-radius: 18px;
+  background: rgba(13, 17, 21, 0.72);
+  box-shadow: var(--ring);
+  color: var(--ink);
+  cursor: pointer;
+  transition: box-shadow 0.15s ease-out, transform 0.15s ease-out;
+}
+.tools button:hover { box-shadow: var(--ring-hover); }
+.tools button:active { transform: var(--press); }
+.tools svg { width: 18px; height: 18px; }
+/* touch pans with two fingers, there is no right click to explain */
+@media (pointer: coarse) {
+  .hint { display: none; }
+}
+/* a scene nobody can drag (the home film) must let a finger scroll the page through it */
+.viewer[data-static] .canvas { touch-action: auto; cursor: auto; }

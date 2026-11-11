@@ -1,0 +1,34 @@
+/* desktop: the viewer spans two rows; the header and the options stack as one card on the right */
+.layout {
+  grid-template-rows: auto 1fr;
+  grid-template-areas: 'stage head' 'stage panel';
+  row-gap: 0;
+}
+.stage { grid-area: stage; }
+.head {
+  grid-area: head;
+  padding: 26px 24px 4px;
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  background: var(--s1);
+  /* one card in two grid cells: the shared ring is clipped where they meet, so no seam shows */
+  box-shadow: var(--ring);
+  clip-path: inset(-1px -1px 0 -1px);
+  animation: rise 0.9s var(--ease) both;
+}
+.panel {
+  grid-area: panel;
+  position: static;
+  max-height: none;
+  border-radius: 0 0 var(--r-xl) var(--r-xl);
+  clip-path: inset(0 -1px -1px -1px);
+}
+.crumb { font-size: var(--f-small); color: var(--ink-3); margin-bottom: 8px; }
+.title { font-size: clamp(30px, 2.8vw, 42px); }
+.desc { margin-top: 12px; color: var(--ink-2); max-width: 42ch; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+
+@media (max-width: 960px) {
+  .layout { grid-template-rows: none; grid-template-areas: 'head' 'stage' 'panel'; row-gap: 14px; }
+  .head { padding: 8px 0 0; background: none; box-shadow: none; }
+  .panel { border-radius: var(--r-xl); clip-path: none; }
+}
