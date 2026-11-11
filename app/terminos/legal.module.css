@@ -1,0 +1,11 @@
+/* a document to read: one narrow column, sections ruled apart */
+.page { display: grid; gap: 0; max-width: calc(68ch + 2 * var(--gutter)); padding-block: clamp(48px, 7vw, 96px) 0; }
+.head { display: grid; gap: 14px; padding-bottom: 32px; }
+.eyebrow { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.head h1 { font-size: var(--f-h2); }
+.date { font-size: var(--f-small); color: var(--ink-3); }
+.head p:last-child { color: var(--ink-2); font-size: var(--f-lead); }
+.page section { display: grid; gap: 12px; padding: 28px 0; border-top: 1px solid var(--line); }
+.page h2 { font-size: var(--f-h3); }
+.page section p { color: var(--ink-2); }
+.page a { color: var(--ink); }

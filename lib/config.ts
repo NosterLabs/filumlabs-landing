@@ -5,6 +5,8 @@ export const SHOP = {
   // WhatsApp number: country code, no +, no spaces. NosterLabs' line for now (+54 9 11 7365-0421).
   // If emptied, every WhatsApp button opens the chat picker and the UI says the number is pending.
   whatsapp: '5491173650421',
+  // for questions that are not orders, and for the terms' data requests: NosterLabs' inbox for now
+  email: 'info@nosterlabs.com',
   // the catalogue and its prices are examples; set false when the real ones are loaded
   demoCatalog: true,
   // canonical address of the site: sitemap, canonical URLs, structured data for Google and AI answers

@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Hero from '@/components/home/Hero';
 import Faq from '@/components/home/Faq';
+import Contact from '@/components/home/Contact';
+import Library from '@/components/home/Library';
 import ProductCard from '@/components/catalog/ProductCard';
 import Typed from '@/components/Typed';
 import { PRODUCTS, cardData } from '@/lib/catalog';
@@ -68,11 +70,19 @@ export default function Home() {
         </div>
       </section>
 
+      <section id="disenos" className={`wrap ${s.section}`} aria-labelledby="disenos-title">
+        <Library />
+      </section>
+
       <section id="preguntas" className={`wrap ${s.section} ${s.faq}`} aria-labelledby="preguntas-title">
         <h2 id="preguntas-title" data-reveal="rise">
           Antes de pedir
         </h2>
         <Faq />
+      </section>
+
+      <section id="contacto" className={`wrap ${s.section}`} aria-labelledby="contacto-title">
+        <Contact />
       </section>
     </main>
   );

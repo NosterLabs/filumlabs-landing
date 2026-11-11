@@ -6,7 +6,8 @@ import Icon from '../Icon';
 import Swatches from '../Swatches';
 import { COLORS, colorOf, type ColorId } from '@/lib/config';
 import { money } from '@/lib/format';
-import { WA_PENDING, waLink } from '@/lib/whatsapp';
+import { LIMITS, WA_PENDING, clampQty, fitsWhatsApp, waLink } from '@/lib/whatsapp';
+import Left from './Left';
 import s from './Wholesale.module.css';
 
 export type WholesaleItem = { slug: string; name: string; variants: { id: string; label: string; price: number }[]; colors: ColorId[] };
@@ -38,6 +39,7 @@ export default function Wholesale({ items, demo }: { items: WholesaleItem[]; dem
     when.trim() && `Lo necesito para: ${when.trim()}`,
     notes.trim() && `Notas: ${notes.trim()}`,
   ].filter(Boolean) as string[];
+  const fits = fitsWhatsApp(lines.join('\n'));
 
   const pick = (next: string) => {
     setSlug(next);
@@ -91,7 +93,7 @@ export default function Wholesale({ items, demo }: { items: WholesaleItem[]; dem
         ) : (
           <div className={s.field}>
             <label htmlFor={`${id}-d`}>Qué pieza es (opcional)</label>
-            <input id={`${id}-d`} type="text" placeholder="Por ejemplo, soporte para estante" value={piece} onChange={(e) => setPiece(e.target.value)} />
+            <input id={`${id}-d`} type="text" maxLength={LIMITS.short} placeholder="Por ejemplo, soporte para estante" value={piece} onChange={(e) => setPiece(e.target.value)} />
           </div>
         )}
 
@@ -99,9 +101,9 @@ export default function Wholesale({ items, demo }: { items: WholesaleItem[]; dem
           <div className={s.field}>
             <label htmlFor={`${id}-q`}>Cantidad</label>
             <div className="qty">
-              <button type="button" onClick={() => setQty((n) => Math.max(1, n - 10))} aria-label="Diez menos">−</button>
-              <input id={`${id}-q`} type="number" min={1} value={qty} onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))} />
-              <button type="button" onClick={() => setQty((n) => n + 10)} aria-label="Diez más">+</button>
+              <button type="button" onClick={() => setQty((n) => clampQty(n - 10))} aria-label="Diez menos">−</button>
+              <input id={`${id}-q`} type="number" min={1} max={LIMITS.qty} value={qty} onChange={(e) => setQty(clampQty(Number(e.target.value)))} />
+              <button type="button" onClick={() => setQty((n) => clampQty(n + 10))} aria-label="Diez más">+</button>
             </div>
           </div>
           <div className={s.field}>
@@ -112,11 +114,12 @@ export default function Wholesale({ items, demo }: { items: WholesaleItem[]; dem
 
         <div className={s.field}>
           <label htmlFor={`${id}-w`}>Para cuándo (opcional)</label>
-          <input id={`${id}-w`} type="text" placeholder="Por ejemplo, fin de mes" value={when} onChange={(e) => setWhen(e.target.value)} />
+          <input id={`${id}-w`} type="text" maxLength={LIMITS.short} placeholder="Por ejemplo, fin de mes" value={when} onChange={(e) => setWhen(e.target.value)} />
         </div>
         <div className={s.field}>
           <label htmlFor={`${id}-n`}>Notas (opcional)</label>
-          <textarea id={`${id}-n`} rows={3} placeholder="Packaging, un color especial, una entrega en partes..." value={notes} onChange={(e) => setNotes(e.target.value)} />
+          <textarea id={`${id}-n`} rows={3} placeholder="Packaging, un color especial, una entrega en partes..." value={notes} maxLength={LIMITS.text} onChange={(e) => setNotes(e.target.value)} />
+          <Left used={notes.length} max={LIMITS.text} fits={fits} />
         </div>
       </form>
 
@@ -164,7 +167,13 @@ export default function Wholesale({ items, demo }: { items: WholesaleItem[]; dem
             Precio de lista: {qty} × {money(v.price)} = {money(qty * v.price)}. El precio por cantidad te lo pasamos por WhatsApp.
           </p>
         )}
-        <a className="btn btn--full" href={waLink(lines.join('\n'))} target="_blank" rel="noopener noreferrer">
+        <a
+          className="btn btn--full"
+          href={fits ? waLink(lines.join('\n')) : undefined}
+          aria-disabled={!fits || undefined}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           Abrir este mensaje en WhatsApp
         </a>
         {WA_PENDING && <p className="wa-note">Número de WhatsApp pendiente: el mensaje se abre para que elijas el contacto.</p>}

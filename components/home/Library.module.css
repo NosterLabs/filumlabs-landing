@@ -1,0 +1,116 @@
+/* ---------- the plate: the photo fills the card, the copy sits on its dark side ---------- */
+.plate {
+  position: relative;
+  display: grid;
+  align-items: center;
+  min-height: clamp(520px, 44vw, 640px);
+  border-radius: var(--r-xl);
+  background: var(--s1);
+  box-shadow: var(--ring);
+  /* clip, not hidden: a hidden box is a scroll container, and view() below would track it instead of the page */
+  overflow: clip;
+  transform: perspective(1400px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.6s var(--ease);
+}
+.photo { position: absolute; inset: 0; }
+.photo img { object-fit: cover; object-position: 70% 50%; }
+/* the dark side of the photo, deepened so the copy reads on any screen */
+.photo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(13, 17, 21, 0.92) 0%, rgba(13, 17, 21, 0.7) 34%, rgba(13, 17, 21, 0) 62%);
+}
+/* a soft light that follows the mouse over the textured plate */
+.plate::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(40% 60% at var(--gx, 50%) var(--gy, 50%), rgba(238, 242, 245, 0.1), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease-out;
+  pointer-events: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .plate:hover::after { opacity: 1; }
+}
+
+.copy { position: relative; z-index: 1; display: grid; gap: 18px; justify-items: start; max-width: 680px; padding: clamp(28px, 5vw, 72px); }
+.eyebrow { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.copy h2 { font-size: var(--f-h2); max-width: 13ch; }
+.lede { color: var(--ink-2); max-width: 44ch; }
+.search { display: flex; gap: 8px; width: 100%; margin-top: 6px; padding: 6px; border-radius: 999px; background: rgba(13, 17, 21, 0.72); box-shadow: var(--ring); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.search input { flex: 1; min-width: 0; min-height: 48px; padding: 0 18px; border: 0; background: none; }
+/* the whole capsule takes the focus ring, not the bare field inside it */
+.search input:focus-visible { outline: none; }
+.search:has(input:focus-visible) { box-shadow: 0 0 0 2px var(--mist); }
+.search input::placeholder { color: var(--ink-3); }
+.search input::-webkit-search-cancel-button { display: none; }
+.search :global(.btn) { min-height: 48px; }
+
+/* the nozzle: a hot line riding the top of what is printed so far */
+.nozzle {
+  position: absolute;
+  inset: 0;
+  border-top: 2px solid var(--hot);
+  opacity: 0;
+  pointer-events: none;
+}
+.nozzle::before { content: ''; position: absolute; left: 0; right: 0; top: -2px; height: 2px; box-shadow: 0 0 18px 2px var(--hot); }
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* the shorthand gives the scroll-driven duration (auto); the timeline must come after it */
+    .photo { animation: platePrint steps(26, end) both; }
+    .nozzle { animation: plateNozzle steps(26, end) both; }
+    .photo, .nozzle { animation-timeline: view(); animation-range: entry 20% cover 50%; }
+    .sketch path { animation: trace linear both; animation-timeline: view(); animation-range: entry 40% cover 55%; }
+  }
+}
+@keyframes platePrint {
+  from { clip-path: inset(100% 0 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+@keyframes plateNozzle {
+  from { transform: translateY(100%); opacity: 1; }
+  94% { opacity: 1; }
+  to { transform: none; opacity: 0; }
+}
+@keyframes trace { from { stroke-dashoffset: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .plate { transform: none; }
+}
+
+/* ---------- custom design: the way out when nothing fits ---------- */
+.custom {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 20px clamp(20px, 3vw, 40px);
+  margin-top: 14px;
+  padding: clamp(20px, 3vw, 32px) clamp(24px, 4vw, 48px);
+  border-radius: var(--r-xl);
+  background: var(--s1);
+  box-shadow: var(--ring);
+}
+.sketch { width: 132px; height: auto; overflow: visible; }
+.sketch path { fill: none; stroke: var(--ink-2); stroke-width: 1.5; stroke-linejoin: round; stroke-dasharray: 1; }
+.sketch .dim { stroke: var(--ink-3); stroke-width: 1; }
+.sketch text { fill: var(--ink-3); font-size: 8px; text-anchor: middle; }
+.customCopy { display: grid; gap: 6px; }
+.customCopy h3 { font-size: var(--f-h3); }
+.customCopy p { color: var(--ink-2); max-width: 52ch; }
+.custom :global(.wa-note) { grid-column: 1 / -1; }
+
+@media (max-width: 860px) {
+  .plate { align-items: end; min-height: 0; padding-top: 58vw; }
+  .photo img { object-position: 78% 50%; }
+  .photo::after { background: linear-gradient(180deg, rgba(13, 17, 21, 0) 25%, rgba(13, 17, 21, 0.85) 52%, var(--s1) 68%); }
+  .copy { max-width: none; padding-top: 0; }
+  .custom { grid-template-columns: minmax(0, 1fr); justify-items: start; }
+}
+@media (max-width: 520px) {
+  .search { flex-direction: column; border-radius: var(--r-lg); }
+  .search :global(.btn) { width: 100%; }
+}

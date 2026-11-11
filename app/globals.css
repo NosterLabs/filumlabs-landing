@@ -346,6 +346,9 @@ p, li, figcaption, summary { text-wrap: pretty; }
 .footer-cols a { display: inline-flex; align-items: center; min-height: 40px; color: var(--ink-2); text-decoration: none; transition: color 0.2s ease-out; }
 .footer-cols a:hover { color: var(--ink); }
 .footer-areas { color: var(--ink-3); font-size: var(--f-small); line-height: 1.7; }
+.footer-terms { display: flex; gap: 20px; }
+.footer-terms a { display: inline-flex; align-items: center; min-height: 40px; color: var(--ink-2); text-decoration: none; transition: color 0.2s ease-out; }
+.footer-terms a:hover { color: var(--ink); }
 .footer-legal { margin-top: 56px; display: flex; justify-content: space-between; align-items: center; gap: 8px 24px; flex-wrap: wrap; font-size: 13px; color: var(--ink-3); }
 /* the sign-off: the name as a print, its layer lines showing, built up from the bed as the page ends */
 /* clip, not hidden: a hidden box is a scroll container, and view() would track it instead of the page */

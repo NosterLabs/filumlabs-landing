@@ -17,6 +17,8 @@
 .field ::placeholder { color: var(--ink-3); }
 .field select option { background: var(--s1); }
 .field :global(.qty) { justify-self: start; }
+.count { font-size: var(--f-small); color: var(--ink-3); }
+.count[role='alert'] { color: var(--danger); }
 .field :global(.qty) input { min-height: 44px; width: 64px; padding: 0; border: 0; background: none; }
 
 /* the first choice decides the rest of the form: two cards, not a mixed dropdown */

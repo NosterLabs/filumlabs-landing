@@ -9,6 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ['/impresion-3d-ituzaingo', 0.9],
     ['/catalogo', 0.8],
     ['/mayoristas', 0.7],
+    ['/terminos', 0.2],
   ];
   return [
     ...pages.map(([path, priority]) => ({ url: abs(path), changeFrequency: 'monthly' as const, priority })),

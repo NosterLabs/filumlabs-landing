@@ -1,0 +1,26 @@
+/* the question form: the pitch and direct channels on one side, the message on the other */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(28px, 5vw, 80px);
+  padding: clamp(28px, 5vw, 72px);
+  border-radius: var(--r-xl);
+  background: radial-gradient(90% 120% at 0% 0%, var(--s3), var(--s1) 62%);
+}
+.copy { display: grid; gap: 20px; align-content: start; }
+.copy h2 { font-size: var(--f-h2); max-width: 11ch; }
+.copy p { color: var(--ink-2); max-width: 40ch; }
+
+.direct { list-style: none; padding: 0; margin-top: 8px; display: grid; }
+.direct li { display: flex; justify-content: space-between; align-items: center; gap: 16px; min-height: 52px; border-top: 1px solid var(--line); }
+.direct li:last-child { border-bottom: 1px solid var(--line); }
+.direct span { color: var(--ink-3); font-size: var(--f-small); }
+.direct a { overflow-wrap: anywhere; text-align: right; }
+
+.form { align-content: start; }
+.send { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; }
+.form :global(.wa-note) a { color: var(--ink-2); }
+
+@media (max-width: 860px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+}

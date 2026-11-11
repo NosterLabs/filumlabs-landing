@@ -82,6 +82,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <ul>
                     <li><Link href="/#como-funciona">Cómo funciona</Link></li>
                     <li><Link href="/#preguntas">Preguntas</Link></li>
+                    <li><Link href="/#contacto">Consultas</Link></li>
                     <li><a href="#main">Volver arriba</a></li>
                   </ul>
                 </div>
@@ -95,6 +96,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="footer-legal">
               <span>© 2026 FilumLabs. Impresión 3D en Ituzaingó, Zona Oeste del Gran Buenos Aires.</span>
               <span>Tus archivos se procesan en tu navegador y no se guardan en ningún servidor.</span>
+              <span className="footer-terms">
+                <Link href="/terminos">Términos y condiciones</Link>
+                <Link href="/terminos#privacidad">Privacidad</Link>
+              </span>
             </div>
             <FooterMark />
           </footer>

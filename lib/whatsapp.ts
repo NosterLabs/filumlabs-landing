@@ -41,3 +41,10 @@ export function orderMessage(items: CartItem[]) {
 export const WA_PENDING = !SHOP.whatsapp;
 
 export const waLink = (text: string) => `https://wa.me/${SHOP.whatsapp}?text=${encodeURIComponent(text)}`;
+
+// a wa.me link opens everywhere up to about 2000 characters. The message travels encoded:
+// a space takes 3, an accent 6, so the forms cap their fields and check the finished link too.
+export const WA_MAX_URL = 2000;
+export const LIMITS = { name: 60, short: 80, text: 500, qty: 9999 };
+export const fitsWhatsApp = (text: string) => waLink(text).length <= WA_MAX_URL;
+export const clampQty = (n: number) => Math.min(LIMITS.qty, Math.max(1, Math.round(n) || 1));

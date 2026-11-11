@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import Link from 'next/link';
-import { WA_PENDING, itemTotal, orderMessage, waLink, type CartItem } from '@/lib/whatsapp';
+import { LIMITS, WA_PENDING, clampQty, itemTotal, orderMessage, waLink, type CartItem } from '@/lib/whatsapp';
 import { tierFor } from '@/lib/pricing';
 import { money } from '@/lib/format';
 
@@ -51,7 +51,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setAdded((n) => n + 1);
         setOpen(true);
       },
-      setQty: (key, qty) => save(items.map((i) => (i.key === key ? { ...i, qty: Math.max(1, qty) } : i))),
+      setQty: (key, qty) => save(items.map((i) => (i.key === key ? { ...i, qty: clampQty(qty) } : i))),
       remove: (key) => save(items.filter((i) => i.key !== key)),
     }),
     [items, open, added, save],
@@ -138,7 +138,7 @@ function CartDrawer() {
                   <div className="drawer-row">
                     <div className="qty" role="group" aria-label={`Cantidad de ${i.name}`}>
                       <button type="button" onClick={() => setQty(i.key, i.qty - 1)} aria-label="Una menos">−</button>
-                      <input type="number" min={1} value={i.qty} onChange={(e) => setQty(i.key, Number(e.target.value) || 1)} aria-label="Cantidad" />
+                      <input type="number" min={1} max={LIMITS.qty} value={i.qty} onChange={(e) => setQty(i.key, Number(e.target.value) || 1)} aria-label="Cantidad" />
                       <button type="button" onClick={() => setQty(i.key, i.qty + 1)} aria-label="Una más">+</button>
                     </div>
                     <button type="button" className="link" onClick={() => remove(i.key)}>

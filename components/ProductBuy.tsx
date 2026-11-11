@@ -11,6 +11,7 @@ import Price from './Price';
 import { MATERIALS, colorOf, colorsFor, type ColorId, type MaterialId } from '@/lib/config';
 import { DEFAULT_PRINTER } from '@/lib/printers';
 import { lineTotal } from '@/lib/pricing';
+import { LIMITS, clampQty } from '@/lib/whatsapp';
 import { duration, grams, size } from '@/lib/format';
 import s from '@/app/cotizar/cotizar.module.css';
 import p from './ProductBuy.module.css';
@@ -108,9 +109,9 @@ export default function ProductBuy({ product, quotes, poster, demo }: { product:
           <div className={s.priceRow}>
             <label htmlFor="qty">Cantidad</label>
             <div className="qty">
-              <button type="button" onClick={() => setQty((n) => Math.max(1, n - 1))} aria-label="Una menos">−</button>
-              <input id="qty" type="number" min={1} value={qty} onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))} />
-              <button type="button" onClick={() => setQty((n) => n + 1)} aria-label="Una más">+</button>
+              <button type="button" onClick={() => setQty((n) => clampQty(n - 1))} aria-label="Una menos">−</button>
+              <input id="qty" type="number" min={1} max={LIMITS.qty} value={qty} onChange={(e) => setQty(clampQty(Number(e.target.value)))} />
+              <button type="button" onClick={() => setQty((n) => clampQty(n + 1))} aria-label="Una más">+</button>
             </div>
           </div>
           <div className={`${s.priceRow} ${s.total}`}>

@@ -18,7 +18,7 @@ import Price from './Price';
 import { MATERIALS, colorOf, colorsFor, type ColorId, type MaterialId } from '@/lib/config';
 import { DEFAULT_PRINTER, PRINTERS } from '@/lib/printers';
 import { duration, grams, list, money, size } from '@/lib/format';
-import { WA_PENDING, orderMessage, waLink } from '@/lib/whatsapp';
+import { LIMITS, WA_PENDING, clampQty, orderMessage, waLink } from '@/lib/whatsapp';
 import s from '@/app/cotizar/cotizar.module.css';
 
 const SAMPLES: { id: ModelId; label: string }[] = [
@@ -77,7 +77,8 @@ export default function Quoter() {
         g.setAttribute('normal', new Float32BufferAttribute(p.normals, 3));
         return { number: p.plate, geometry: g, stats: p.stats };
       });
-      setModel({ name: file.name.replace(/\.[^.]+$/, ''), plates });
+      // the file name goes into the order message: kept short like every other field
+      setModel({ name: file.name.replace(/\.[^.]+$/, '').slice(0, LIMITS.short), plates });
       reset();
       setStatus({ kind: 'idle' });
     } catch (e) {
@@ -352,7 +353,7 @@ export default function Quoter() {
           <div className={s.inline}>
             <input type="range" min={10} max={400} value={Math.min(scalePct, 400)} onChange={(e) => setScalePct(Number(e.target.value))} aria-label="Escala" />
             <label className={s.numberField}>
-              <input type="number" min={1} max={5000} value={scalePct} onChange={(e) => setScalePct(Math.max(1, Number(e.target.value) || 100))} aria-label="Escala en porcentaje" />%
+              <input type="number" min={1} max={5000} value={scalePct} onChange={(e) => setScalePct(Math.min(5000, Math.max(1, Number(e.target.value) || 100)))} aria-label="Escala en porcentaje" />%
             </label>
           </div>
           <div className={s.chips}>
@@ -412,9 +413,9 @@ export default function Quoter() {
           <div className={s.priceRow}>
             <label htmlFor="qty">Cantidad</label>
             <div className="qty">
-              <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Una menos">−</button>
-              <input id="qty" type="number" min={1} value={qty} onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))} />
-              <button type="button" onClick={() => setQty((q) => q + 1)} aria-label="Una más">+</button>
+              <button type="button" onClick={() => setQty((q) => clampQty(q - 1))} aria-label="Una menos">−</button>
+              <input id="qty" type="number" min={1} max={LIMITS.qty} value={qty} onChange={(e) => setQty(clampQty(Number(e.target.value)))} />
+              <button type="button" onClick={() => setQty((q) => clampQty(q + 1))} aria-label="Una más">+</button>
             </div>
           </div>
           <div className={`${s.priceRow} ${s.total}`}>
